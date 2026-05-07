@@ -14,8 +14,8 @@ export default async function Home() {
    <div className="relative min-h-screen flex flex-col bg-brand-black text-brand-white font-sans antialiased overflow-x-hidden selection:bg-mint-500/20">
     <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]"/>
     {/* Navigation Bar */}
-    <nav className=" fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/85 backdrop-blur-xl flex items-center justify-between px-12 h-[60px] ">
-    <div className=" flex items-center gap-2.5 text-[15px] font-medium uppercase tracking-[0.12em] text-brand-white ">
+    <nav className=" fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/85 backdrop-blur-xl flex items-center justify-between px-4 h-[60px] md:px-12 ">
+    <div className=" flex items-center gap-2.5 text-sm md:text-[15px]  shrink-0 font-medium uppercase tracking-[0.12em] text-brand-white ">
       <span className ="flex items-center justify-center w-6 h-6 border border-mint-600">
         <svg viewBox="0 0 14 14 " className="w-3.5 h-3.5 " fill="none">
           <polyline points="1,10 4,6 7,8 10,3 13,5" stroke="#22C55E" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -23,34 +23,35 @@ export default async function Home() {
       </span>
       WealthWatch
     </div>
-    <ul className="flex gap-9 list-none">
+    <ul className="hidden  md:flex gap-9 list-none">
       <li><a href="#" className="text-[13px] text-gray-400 no-underline tracking-[0.04em] hover:text-brand-white transition-colors">Product</a></li>
       <li><a href="#" className="text-[13px] text-gray-400 no-underline tracking-[0.04em] hover:text-brand-white transition-colors"> Markets</a></li>
       <li><a href="#" className="text-[13px] text-gray-400 no-underline tracking-[0.04em] hover:text-brand-white transition-colors">Pricing</a></li>
       <li><a href="#" className="text-[13px] text-gray-400 no-underline tracking-[0.04em] hover:text-brand-white transition-colors">Enterprise</a></li>
       <li><a href="#" className="text-[13px] text-gray-400 no-underline tracking-[0.04em] hover:text-brand-white transition-colors">Docs</a></li>
     </ul>
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 md:gap-3">
       <button onClick={async ()=>{
         "use server";
         await signIn("google")
-      }} className="font-sans text-[13px] font-medium text-brand-white bg-brand-black border border-brand-white px-5 py-2 tracking-[0.04em] hover:bg-brand-white hover:text-brand-black transition-all">Get started →</button>
+      }} className="text-xs  md:text-[13px] font-medium text-brand-white bg-brand-black border border-brand-white px-3
+      md:px-5 py-1.5 md:py-2 tracking-[0.04em] hover:bg-brand-white hover:text-brand-black transition-all">Get started →</button>
     </div>
     </nav>
 {/* Hero Section */}
-    <section className="min-h-screen grid grid-cols-2 border-b border-brand-white/10">
+    <section className="min-h-screen grid grid-cols-1 md:grid-cols-2 border-b border-brand-white/10">
     {/* Left Column - Hero Content */}
-    <div className="col-span-1 flex px-16 pt-[120px] pb-20 border-r border-white/10 flex-col justify-center">
-        <span className="inline-flex items-center gap-2 text-[11px] font-normal tracking-[0.14em] uppercase text-sky-400 font-mono mb-10">
+    <div className="col-span-1 flex px-6 pt-32 md:px-16 md:pt-[120px] pb-12 md:pb-20 border-r-0 md:border-r border-white/10 flex-col justify-center">
+        <span className="inline-flex items-center gap-2 text-[11px] font-normal tracking-[0.14em] uppercase text-sky-400 font-mono mb-6 md:mb-10">
           <span className="block w-5 h-px bg-sky-400">Portfolio Intelligence Platform </span>
         </span>
-        <h1 className="text-[clamp(42px,4.5vw,72px)] font-light leading-[1.05] tracking-[-0.02em] mb-8">
-          Know your <br/> <em>wealth.</em><br/>Down to <br/> the basis point. 
+        <h1 className="text-[clamp(38px,10vw,72px)] font-light leading-[1.05] tracking-[-0.02em] mb-6 md:mb-8 mt-5 md:mt-0">
+          Know your <br/> <em className="not-italic text-gray-400">wealth.</em><br/>Down to <br/> the basis point. 
         </h1>
-        <p className="text-base text-gray-400 leading-7 max-w-[420px] mb-12">
+        <p className="text-sm md:text-base text-gray-400 leading-7 max-w-[420px] mb-8 md:mb-12">
           WealthWatch is the institutional-grade dashboard for investors who demand precision. Real-time analytics, multi-account aggregation, and zero noise. 
         </p>
-        <div className="flex items-center gap-4">
+        <div className="flex sm:items-center gap-4 sm:flex-row items-start flex-col">
           <a
   href="#signin-card"
   className="group font-sans text-sm font-medium text-brand-black bg-brand-white border-none py-3.5 px-8 tracking-[0.02em] inline-flex items-center gap-2.5 hover:bg-gray-200 transition-all no-underline"
@@ -61,24 +62,192 @@ export default async function Home() {
             </svg>
           </a>
         </div>
-        <div className="mt-16 pt-10 border-t border-white/10 grid grid-cols-3 gap-8">
+        <div className="mt-12 md:mt-16 pt-8 md:pt-10 border-t border-white/10 grid grid-cols-3 gap-4 md:gap-8">
           <div>
-            <div className="text-[26px] font-medium tracking-[-0.02em] text-mint-500 mb-1"> $4.2T</div>
-            <div className="text-[11px] text-gray-500 tracking-[0.08em] uppercase font-mono">Assets Tracked </div>
+            <div className="text-xl md:text-[26px] font-medium tracking-[-0.02em] text-mint-500 mb-1"> $4.2T</div>
+            <div className="text-[9px] md:text-[11px] text-gray-500 tracking-[0.08em] uppercase font-mono">Assets Tracked </div>
           </div>
           <div >
-            <div className="text-[26px] font-medium tracking-[-0.02em] mb-1">280K</div>
-            <div className="text-[11px] text-gray-500 tracking-[0.08em] uppercase font-mono">Active Portfolios</div>
+            <div className="text-xl md:text-[26px] font-medium tracking-[-0.02em] mb-1">280K</div>
+            <div className="text-[9px] md:text-[11px] text-gray-500 tracking-[0.08em] uppercase font-mono">Active Portfolios</div>
           </div>
           <div>
-            <div className="text-[26px] font-medium tracking-[-0.02em] mb-1">99.99%</div>
-            <div className="text-[11px] text-gray-500 tracking-[0.08em] uppercase font-mono">Data Accuracy</div>
+            <div className="text-xl md:text-[26px] font-medium tracking-[-0.02em] mb-1">99.99%</div>
+            <div className="text-[9px] md:text-[11px] text-gray-500 tracking-[0.08em] uppercase font-mono">Data Accuracy</div>
           </div>
         </div>
     </div>
     {/* Right Column - Hero Image */}
+    <div className="col-span-1 relative pt-8 md:pt-[60px] px-4 md:px-0 flex flex-col overflow-hidden">
+      <div className="md:mx-8 flex-1 border border-white/10 border-b-0 bg-gray-950 relative overflow-x-auto md:overflow-hidden ">
+        <div className="border-b border-white/10 px-4 md:px-5 py-3.5 flex items-center justify-between min-w-[480px] md:min-w-0">
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#FF5F57]"></span>
+              <span className="w-2 h-2 rounded-full bg-[#FFBD2E]"></span>
+              <span className="w-2 h-2 rounded-full bg-[#28CA41]"></span>
+            </div>
+            <span className="text-xs text-gray-500 font-mono">wealthwatch - dashboard</span>
+          </div>
+          <span className="text-[10px] font-mono px-2 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/20 tracking-[0.08em]">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-mint-500 animate-live-pulse mr-1.5" /> LIVE
+          </span>
+        </div>
+        <div className="grid grid-cols-[120px_1fr] md:grid-cols-[160px_1fr] h-[calc(100%-45px)] min-w-[480px] md:min-w-0">
+          <div>
+           {[ 
+  { 
+    label: "Overview", 
+    active: true, 
+    icon: (
+      <svg className="w-3.5 h-3.5 text-sky-500" viewBox="0 0 14 14" fill="none">
+        <rect x="1" y="1" width="5" height="5" rx="0.5" stroke="currentColor" strokeWidth="1" />
+        <rect x="8" y="1" width="5" height="5" rx="0.5" stroke="currentColor" strokeWidth="1" />
+        <rect x="1" y="8" width="5" height="5" rx="0.5" stroke="currentColor" strokeWidth="1" />
+        <rect x="8" y="8" width="5" height="5" rx="0.5" stroke="currentColor" strokeWidth="1" />
+      </svg>
+    )
+  },
+  { 
+    label: "Portfolio", 
+    icon: (
+      <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none">
+        <polyline points="1,10 4,7 7,8 10,4 13,6" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round" />
+      </svg>
+    )
+  },
+  { 
+    label: "History", 
+    icon: (
+      <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1" />
+        <path d="M7 4v3l2 2" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+      </svg>
+    )
+  },
+  { 
+    label: "Markets", 
+    icon: (
+      <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none">
+        <rect x="2" y="2" width="10" height="10" rx="0.5" stroke="currentColor" strokeWidth="1" />
+        <path d="M2 6h10M6 2v10" stroke="currentColor" strokeWidth="1" />
+      </svg>
+    )
+  },
+  { 
+    label: "Alerts", 
+    icon: (
+      <svg className="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none">
+        <path d="M7 1L9 5h4l-3 3 1.5 4L7 10l-4.5 2L4 8 1 5h4z" stroke="currentColor" strokeWidth="1" fill="none" strokeLinejoin="round" />
+      </svg>
+    )
+  }
+].map((item, i) => (
+  <div
+    key={i}
+    className={`flex items-center gap-2.5 px-3 md:px-5 py-2 text-xs cursor-default ${
+      item.active ? "text-brand-white bg-gray-800" : "text-gray-500"
+    }`}
+  >
+    {item.icon}
+    {item.label}
+  </div>
+))}
+          </div>
+          <div className="p-4 md:p-5 overflow-hidden">
+            <div className="text-[10px] font-mono text-gray-500 tracking-[0.1em] mb-1.5">Total Portfolio Value</div>
+            <div className="text-xl md:text-[28px] font-medium tracking-[-0.02em] mb-1">$284,<span className="animate-blink">|</span>917.40</div>
+           <div className="text-xs md:text-[11px] text-mint-500 font-mono flex items-center gap-1 mb-4">
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 7L5 3l3 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  +$3,241.18 today (↑1.15%)
+                </div>
+              
+              <svg className="w-full h-[60px] md:h-[90px]" viewBox="0 0 280 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stopColor="#22C55E" stopOpacity="0.12" />
+      <stop offset="100%" stopColor="#22C55E" stopOpacity="0" />
+    </linearGradient>
+  </defs>
+
+  <line x1="0" y1="22" x2="280" y2="22" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+  <line x1="0" y1="44" x2="280" y2="44" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+  <line x1="0" y1="66" x2="280" y2="66" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+
+  <path
+    d="M0,72 L20,65 L40,70 L60,58 L80,62 L100,48 L120,52 L140,40 L160,35 L180,42 L200,30 L220,22 L240,18 L260,12 L280,8 L280,90 L0,90 Z"
+    fill="url(#chartFill)"
+  />
+  <path
+    className="animate-chart-draw"
+    d="M0,72 L20,65 L40,70 L60,58 L80,62 L100,48 L120,52 L140,40 L160,35 L180,42 L200,30 L220,22 L240,18 L260,12 L280,8"
+    stroke="#22C55E"
+    strokeWidth="1.5"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeDasharray="1000"
+  />
+  <circle cx="280" cy="8" r="3" fill="#22C55E" opacity="0" className="animate-fade-up" style={{ animationDelay: "2.8s" }} />
+  <text x="0" y="88" fill="#555" fontSize="7" fontFamily="monospace">Jan</text>
+  <text x="60" y="88" fill="#555" fontSize="7" fontFamily="monospace">Mar</text>
+  <text x="130" y="88" fill="#555" fontSize="7" fontFamily="monospace">Jun</text>
+  <text x="200" y="88" fill="#555" fontSize="7" fontFamily="monospace">Sep</text>
+  <text x="258" y="88" fill="#555" fontSize="7" fontFamily="monospace">Now</text>
+</svg>
+              <div className="grid grid-cols-3 gap-2 mt-3">
+                <div className="border border-white/10 p-2.5 bg-gray-900">
+                  <div className="text-[9px] text-gray-500 font-mono tracking-[0.08em] uppercase mb-1" >Equities</div>
+                  <div className="text-sm md:text-[15px] font-medium text-mint-500" >+8.4%</div>
+                </div>
+                <div className="border border-white/10 p-2.5 bg-gray-900">
+                  <div className="text-[9px] text-gray-500 font-mono tracking-[0.08em] uppercase mb-1" >Expenses</div>
+                  <div className="text-sm md:text-[15px] font-medium text-error-500" >-$1,240</div>
+                </div>
+                <div className="border border-white/10 p-2.5 bg-gray-900" >
+                  <div className="text-[9px] text-gray-500 font-mono tracking-[0.08em] uppercase mb-1" >Cash</div>
+                  <div className="text-sm md:text-[15px] font-medium text-sky-500" >$12,400</div>
+                </div>
+              </div>
+              <div className="mt-3.5" >
+                <div className="text-[9px] font-mono text-gray-500 tracking-[0.1em] uppercase border-b border-white/10 pb-1.5 mb-2 " >Recent Transactions
+                </div>
+                {[{ icon: "↑", name: "NVDA Dividend", cat: "INCOME", amt: "+$341.00", pos: true }, { icon: "↓", name: "Rent — Oct", cat: "HOUSING", amt: "−$2,400.00", pos: false }, { icon: "⇌", name: "AAPL × 3 shares", cat: "TRADE", amt: "+$614.72", pos: true }].map((tx,idx)=>(
+                  <div key={idx} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] text-[11px]" >
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 md:w-[22px] h-5 md:h-[22px] border border-whie/10 flex items-center justify-center text-[10px] shrink-0 " >{tx.icon}</span>
+                      <div>
+                        <div className="text-gray-300 text-xs md:text-[11px]" >{tx.name}</div>
+                        <div className="text-[9px] text-gray-500 font-mono" >{tx.cat}</div>
+                      </div>
+                    </div>
+                    <span className={`font-mono text-xs md:text-[11px] ${tx.pos ? "text-mint-500" : "text-error-500"}`} >{tx.amt}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
-    
+    {/* Metrics Band */}
+    <section className="border-b border-white/10 grid grid-cols-2 md:grid-cols-4">
+      {[ 
+          { val: "$4.2", sup: "T", desc: "Total assets under tracking" }, 
+          { val: "+0.3", sup: "ms", desc: "Average data latency", color: "text-mint-500" }, 
+          { val: "280", sup: "K", desc: "Active portfolios" }, 
+          { val: "12K", sup: "+", desc: "Securities tracked globally" }
+        ].map((m,i)=>(
+          <div key={i} className="p-4 md:p-10 border-r-0 md:border-r border-white/10 even:border-r-0 md:even:border-r md:last:border-r-0 border-b md:border-b-0" >
+            <div className={`text-2xl md:text-4xl font-light tracking-[0.03em] mb-1 md:mb-2 ${m.color||""}`} >
+              {m.val}<sup className="text-sm md:text-lg text-gray-500" >{m.sup}</sup>
+
+            </div>
+            <div className="text-xs md:text-[13px] text-gray-500 leading-5" >{m.desc}</div>
+          </div>
+        ))}
+    </section>
+    {/* Features */}
    </div>
   );
 }
