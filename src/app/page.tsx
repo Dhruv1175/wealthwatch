@@ -248,6 +248,100 @@ export default async function Home() {
         ))}
     </section>
     {/* Features */}
+    <section className="border-b border-white/10" >
+            <div className="px-6 md:px-12 pt-12 md:pt-16 pb-8 md:pd-10 border-b border-white/10" >
+            <div className="text-[11px] font-mono text-gray-500 tracking-[0.12em] uppercase mb-4" > Platform Capabilities </div>
+            <h2 className="text-2xl md:text-[32px] font-light tracking-[-0.02em] max-w-2xl" >Built for precision.<br/>Designed for clarity.</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" >
+              {[
+            { icon: "mint", title: "Live Portfolio Tracking", desc: "Sub-second data refresh across equities..." },
+            { icon: "sky", title: "Multi-Account Aggregation", desc: "Connect brokerage, bank, and crypto accounts..." },
+            { icon: "red", title: "Expense Intelligence", desc: "Automatic categorization and budget alerts..." },
+            { icon: "sky", title: "Risk & Alert Engine", desc: "Configurable threshold alerts for drawdown..." },
+            { icon: "mint", title: "Performance Attribution", desc: "Decompose returns by sector, asset class..." },
+            { icon: "red", title: "Tax-Loss Harvesting", desc: "Surface unrealized losses with optimal harvesting..." }
+          ].map((f,i)=>(
+            <div key={i} className="p-6 md:p-12 border-r-0 md:border-r border-white/10 border-b md:[&:nth-child(2n)]:border-r-0 lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(3n)]:border-r-0 last:border-b-0 md:last:border-b"  >
+                <div className={`w-10 h-10 border border-white/10 flex items-center justify-center mb-6 ${f.icon ==="mint" ?"text-mint-500":"text-error-500" }`} >
+                   {i === 0 && <svg viewBox="0 0 18 18" className="w-4.5 h-4.5" fill="none"><polyline points="1,14 5,9 9,11 13,5 17,7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /><circle cx="17" cy="7" r="1.5" fill="currentColor" /></svg>}
+                {i === 1 && <svg viewBox="0 0 18 18" className="w-4.5 h-4.5" fill="none"><rect x="2" y="2" width="14" height="14" rx="1" stroke="currentColor" strokeWidth="1.4" /><path d="M2 7h14M7 2v14" stroke="currentColor" strokeWidth="1.4" /></svg>}
+                {i === 2 && <svg viewBox="0 0 18 18" className="w-4.5 h-4.5" fill="none"><path d="M9 2v14M2 9h14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /><circle cx="9" cy="9" r="4" stroke="currentColor" strokeWidth="1.4" /></svg>}
+                {i === 3 && <svg viewBox="0 0 18 18" className="w-4.5 h-4.5" fill="none"><path d="M9 1l2.5 5 5.5.8-4 3.9.9 5.5L9 13.5 4.1 16.2l.9-5.5L1 6.8l5.5-.8z" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinejoin="round" /></svg>}
+                {i === 4 && <svg viewBox="0 0 18 18" className="w-4.5 h-4.5" fill="none"><rect x="3" y="10" width="2.5" height="6" rx="0.5" stroke="currentColor" strokeWidth="1.4" /><rect x="7.5" y="6" width="2.5" height="10" rx="0.5" stroke="currentColor" strokeWidth="1.4" /><rect x="12" y="2" width="2.5" height="14" rx="0.5" stroke="currentColor" strokeWidth="1.4" /></svg>}
+                {i === 5 && <svg viewBox="0 0 18 18" className="w-4.5 h-4.5" fill="none"><path d="M3 3h12v12H3z" stroke="currentColor" strokeWidth="1.4" fill="none" /><path d="M3 8h12M8 3v12" stroke="currentColor" strokeWidth="1.4" /><path d="M6 6l6 6M12 6L6 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>}
+                </div>
+                <h3 className="text-base font-medium mb-3" >{f.title}</h3>
+                <p className="text-[13px] text-gray-500 leading-7" >{f.desc}</p>
+            </div>
+          ))}
+
+            </div>
+    </section>
+    {/* Charts */}
+    <section className="grid grid-cols-1 lg:grid-cols-[1fr_480px] border-b border-white/10" >
+    <div className="p-6 md:p-16 border-b lg:border-b-0 lg:border-r border-white/10" >
+    <div className="text-[11px] font-mono text-gray-500 tracking-[0.12em] uppercase mb-4" >Portfolio Analytics</div>
+          <h2 className="text-2xl md:text-[28px] font-light mb-2" >12-Month Total Return</h2>
+          <p className="text-sm md:text-[13px] text-gray-500 mb-6 md:mb-10" >All asset classes, net of fees</p>
+          <svg className="w-full h-48 md:h-60" viewBox="0 0 480 240" xmlns="http://www.w3.org/2000/svg" >
+ <defs>
+              <linearGradient id="bigFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#22C55E" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="#22C55E" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <line x1="60" y1="20" x2="480" y2="20" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+            <line x1="60" y1="65" x2="480" y2="65" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+            <line x1="60" y1="110" x2="480" y2="110" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+            <line x1="60" y1="155" x2="480" y2="155" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+            <line x1="60" y1="200" x2="480" y2="200" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+            <text x="48" y="23" fill="#555" fontSize="9" fontFamily="monospace" textAnchor="end">+30%</text>
+            <text x="48" y="68" fill="#555" fontSize="9" fontFamily="monospace" textAnchor="end">+20%</text>
+            <text x="48" y="113" fill="#555" fontSize="9" fontFamily="monospace" textAnchor="end">+10%</text>
+            <text x="48" y="158" fill="#555" fontSize="9" fontFamily="monospace" textAnchor="end">0%</text>
+            <text x="48" y="203" fill="#555" fontSize="9" fontFamily="monospace" textAnchor="end">−10%</text>
+            <line x1="60" y1="155" x2="480" y2="155" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+            <path d="M60,175 L100,168 L140,160 L180,155 L220,148 L260,140 L300,132 L340,125 L380,118 L420,110 L480,105" stroke="#0EA5E9" strokeWidth="1" fill="none" strokeDasharray="4,3" opacity="0.5" />
+            <path d="M60,190 L100,178 L140,168 L180,162 L220,145 L260,130 L300,110 L340,85 L380,70 L420,50 L480,30 L480,200 L60,200 Z" fill="url(#bigFill)" />
+            <path className="animate-chart-draw" d="M60,190 L100,178 L140,168 L180,162 L220,145 L260,130 L300,110 L340,85 L380,70 L420,50 L480,30" stroke="#22C55E" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="1000" />
+            <text x="60" y="220" fill="#555" fontSize="9" fontFamily="monospace" textAnchor="middle">Jan</text>
+            <text x="140" y="220" fill="#555" fontSize="9" fontFamily="monospace" textAnchor="middle">Mar</text>
+            <text x="220" y="220" fill="#555" fontSize="9" fontFamily="monospace" textAnchor="middle">May</text>
+            <text x="300" y="220" fill="#555" fontSize="9" fontFamily="monospace" textAnchor="middle">Jul</text>
+            <text x="380" y="220" fill="#555" fontSize="9" fontFamily="monospace" textAnchor="middle">Sep</text>
+            <text x="460" y="220" fill="#555" fontSize="9" fontFamily="monospace" textAnchor="middle">Nov</text>
+            <line x1="300" y1="15" x2="320" y2="15" stroke="#22C55E" strokeWidth="1.5" />
+            <text x="325" y="19" fill="#888" fontSize="9" fontFamily="monospace">Portfolio</text>
+            <line x1="390" y1="15" x2="410" y2="15" stroke="#0EA5E9" strokeWidth="1" strokeDasharray="4,3" />
+            <text x="415" y="19" fill="#888" fontSize="9" fontFamily="monospace">Benchmark</text>
+          </svg>
+    </div>
+    <div className="p-6 md:p-16 flex flex-col gap-5 ">
+      <div>
+        <div className="text-[11px] font-mono text-gray-500 tracking-[0.12em] uppercase mb-5" >Asset Allocation</div>
+      {[ { label: "US Equities", pct: "42%", width: "42%", color: "bg-mint-500" }, { label: "Int'l Equities", pct: "18%", width: "18%", color: "bg-sky-500" }, { label: "Fixed Income", pct: "22%", width: "22%", color: "bg-gray-500" }, { label: "Real Assets", pct: "10%", width: "10%", color: "bg-gray-600" }, { label: "Cash & Alts", pct: "8%", width: "8%", color: "bg-error-500" } ].map((a, i) => (
+              <div key={i} className="flex items-center gap-3 mt-[18px] first:mt-0">
+                <span className="text-[13px] text-gray-300 min-w-[80px]">{a.label}</span>
+                <div className="flex-1 h-0.5 bg-gray-800"><div className={`h-0.5 ${a.color}`} style={{ width: a.width }} /></div>
+                <span className="text-[12px] font-mono text-gray-500 min-w-[36px] text-right">{a.pct}</span>
+              </div>
+            ))}
+      </div>
+      <div className="border-t border-white/10 pt-7 mt-2" >
+      <div className="grid grid-cols-2 gap-4" >
+        {[ { label: "SHARPE RATIO", val: "1.84", color: "text-mint-500" }, { label: "MAX DRAWDOWN", val: "−8.2%", color: "text-error-500" }, { label: "BETA", val: "0.73" }, { label: "ALPHA (ann.)", val: "+4.1%", color: "text-mint-500" } ].map((m, i) => (
+                <div key={i}>
+                  <div className="text-[10px] font-mono text-gray-500 tracking-[0.08em] mb-1.5">{m.label}</div>
+                  <div className={`text-[22px] font-medium ${m.color || ""}`}>{m.val}</div>
+                </div>
+              ))}
+      </div>
+
+      </div>
+    </div>
+
+    </section>
    </div>
   );
 }
