@@ -2,6 +2,7 @@ import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/db";
 import UploadForm from "@/components/dashboard/UploadForm"; // Import the client piece
+import SummaryPanel from "@/components/dashboard/SummaryPanel";
 
 export default async function Dashboard() {
 
@@ -12,6 +13,7 @@ export default async function Dashboard() {
   const transactions = await prisma.transaction.findMany({
     where: { userId: session.user.id },
     orderBy: { date: "desc" },
+    take:10
   });
 
   return (
@@ -31,7 +33,7 @@ export default async function Dashboard() {
           </button>
         </form>
       </div>
-
+      <SummaryPanel/>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left Column: AI PDF Upload Test Bench */}
         <div className="md:col-span-1 border border-white/10 p-6 bg-zinc-950">
@@ -49,7 +51,7 @@ export default async function Dashboard() {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-sm font-mono text-mint-500 tracking-wider uppercase">2. Database Transaction Feed</h2>
             <span className="text-xs font-mono bg-zinc-900 px-2.5 py-1 rounded border border-white/5 text-gray-400">
-              {transactions.length} Total Records
+             Top {transactions.length}  Records
             </span>
           </div>
 
