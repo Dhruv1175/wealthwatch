@@ -1,5 +1,6 @@
 import { auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
+import { loginWithCredentials, registerWithCredentials } from "./actions/auth";
 
 export default async function Home() {
   const session = await auth();
@@ -30,9 +31,9 @@ export default async function Home() {
           <li><a href="#" className="text-[13px] text-gray-400 no-underline tracking-[0.04em] hover:text-brand-white transition-colors">Docs</a></li>
         </ul>
         <div className="flex items-center gap-2 md:gap-3">
-          <button className="text-xs md:text-[13px] font-medium text-brand-white bg-brand-black border border-brand-white px-3 md:px-5 py-1.5 md:py-2 tracking-[0.04em] hover:bg-brand-white hover:text-brand-black transition-all">
+        <a href="/login"> <button className="text-xs md:text-[13px] font-medium text-brand-white bg-brand-black border border-brand-white px-3 md:px-5 py-1.5 md:py-2 tracking-[0.04em] hover:bg-brand-white hover:text-brand-black transition-all">
             Get started →
-          </button>
+          </button></a>
         </div>
       </nav>
 
@@ -459,14 +460,29 @@ export default async function Home() {
             <div className="flex items-center gap-3 text-[11px] text-gray-600 font-mono before:flex-1 before:h-px before:bg-white/10 after:flex-1 after:h-px after:bg-white/10">
               OR
             </div>
+            <form action={registerWithCredentials} >
+              <input
+              type="text"
+              name="name"
+              placeholder="Enter Name"
+              className="w-full py-3 px-4 bg-brand-black border border-white/10 text-brand-white font-sans text-sm outline-none focus:border-sky-500 transition-colors placeholder:text-gray-600"
+            /><br/>
             <input
               type="email"
-              placeholder="name@company.com"
+              name="email"
+              placeholder="Enter Email"
+              className="w-full py-3 px-4 bg-brand-black border border-white/10 text-brand-white font-sans text-sm outline-none focus:border-sky-500 transition-colors placeholder:text-gray-600"
+            /><br/>
+            <input
+              type="password"
+              name="password"
+              placeholder="Enter Password"
               className="w-full py-3 px-4 bg-brand-black border border-white/10 text-brand-white font-sans text-sm outline-none focus:border-sky-500 transition-colors placeholder:text-gray-600"
             />
-            <button className="w-full py-3 font-sans text-sm font-medium text-brand-black bg-brand-white border border-brand-white hover:bg-gray-200 transition-colors">
+            <button type="submit" className="w-full py-3 font-sans text-sm font-medium text-brand-black bg-brand-white border border-brand-white hover:bg-gray-200 transition-colors">
               Continue with email →
             </button>
+            </form>
             <p className="text-[11px] text-gray-600 leading-relaxed">
               By continuing, you agree to our <a href="#" className="text-gray-500">Terms of Service</a> and <a href="#" className="text-gray-500">Privacy Policy</a>. WealthWatch uses read‑only access to your financial accounts. We never execute trades on your behalf.
             </p>
