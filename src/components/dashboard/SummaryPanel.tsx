@@ -6,6 +6,7 @@ import {
   PieChart, Pie, Cell
 } from "recharts";
 import { TrendingUp, AlertTriangle, Calendar, Layers, EyeOff } from "lucide-react";
+import AnalyticsSkeleton from "./AnalyticsSkeleton";
 
 type Timeframe = "week" | "month" | "year";
 
@@ -26,6 +27,7 @@ export default function SummaryPanel() {
   const [timeframe, setTimeframe] = useState<Timeframe>("month");
   const [report, setReport] = useState<AdvancedReport | null>(null);
   const [loading, setLoading] = useState(true);
+ 
 
   useEffect(() => {
     async function fetchAdvancedMetrics() {

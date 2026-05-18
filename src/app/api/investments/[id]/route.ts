@@ -96,6 +96,16 @@ export async function PATCH(
         }
       });
     });
+    await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/webhooks/events`, {
+        method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    userId: confirmedUserId,
+    title: "Asset Portfolio Sale Executed",
+    message: `Successfully liquidated units. Capital worth ₹${cashInflowAmount.toFixed(0)} has been routed back to your liquid balance tracks.`,
+    type: "SUCCESS"
+  })
+}).catch(err => console.error("Internal webhook trigger failed safely", err));
 
     return NextResponse.json({ success: true, remainingShares });
   } catch (err) {

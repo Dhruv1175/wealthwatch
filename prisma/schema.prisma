@@ -17,6 +17,7 @@ model User {
   image String?
   accounts Account[]
   investments   Investment[]
+  systemevent   SystemEvent[]
   transactions Transaction[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,6 +31,8 @@ model Transaction {
   date DateTime
   userId String
   user User @relation(fields:[userId],references:[id])
+  @@index([userId, date])
+  @@index([userId, category])
 }
 
 model Account {
@@ -72,3 +75,18 @@ model Investment {
   @@index([userId])
 
 }
+
+model SystemEvent {
+  id             String    @id @default(cuid())
+  userId         String
+  title          String
+  message        String 
+  type           String
+  read           Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  
+  user           User      @relation(fields:[userId],references:[id],onDelete: Cascade)
+  @@index([userId, createdAt])
+}
+
+

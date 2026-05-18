@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateAdvancedSummary, Timeframe } from "@/lib/ai/financial-analyzer";
-
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {

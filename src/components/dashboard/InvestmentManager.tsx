@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Bell, Plus, TrendingUp, TrendingDown, Landmark, Trash2, LineChart, X, DollarSign } from "lucide-react";
 import TradingViewChart from "./TradingViewChart";
+import { useNotifications } from "@/components/dashboard/NotificationContext";
+
 
 export default function InvestmentManager() {
   const [data, setData] = useState<any>({ positions: [], totalValue: 0, totalPnl: 0, sipReminders: [] });
@@ -10,6 +12,7 @@ export default function InvestmentManager() {
   const [activeChartSymbol, setActiveChartSymbol] = useState<string | null>(null);
   const [sellingAsset, setSellingAsset] = useState<any>(null); // State for handling active sell order configurations
   const [sellForm, setSellForm] = useState({ sharesToSell: "", salePrice: "" });
+  const { triggerToast } = useNotifications();
   const [form, setForm] = useState({ symbol: "", name: "", type: "EQUITY_STOCK", sharesOwned: "", avgBuyPrice: "", sipAmount: "", sipDay: "" });
 
   async function loadPortfolio() {
@@ -43,6 +46,7 @@ export default function InvestmentManager() {
       const res = await fetch(`/api/investments/${id}`, { method: "DELETE" });
       if (res.ok) {
         if (activeChartSymbol === data.positions.find((p: any) => p.id === id)?.symbol) setActiveChartSymbol(null);
+        triggerToast("Asset Traced Entry Removed", "The ledger allocation records have been hard deleted from PostgreSQL storage fields.", "INFO");
         loadPortfolio();
       }
     } catch (e) { console.error(e); }
@@ -58,9 +62,14 @@ export default function InvestmentManager() {
       });
       if (res.ok) {
         setSellingAsset(null);
+        triggerToast(
+          "Asset Position Sale Settled",
+          `Successfully processed liquidation order for ${sellingAsset.symbol}. Capital has been logged to your cash inflows table context list.`,
+          "SUCCESS"
+        );
         setSellForm({ sharesToSell: "", salePrice: "" });
         loadPortfolio();
-        alert("Position liquidation recorded successfully. Inflow posted to transaction records!");
+        
       } else {
         const err = await res.json();
         alert(err.error || "Failed to process transaction.");
