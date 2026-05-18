@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/db";
 import UploadForm from "@/components/dashboard/UploadForm"; // Import the client piece
 import SummaryPanel from "@/components/dashboard/SummaryPanel";
+import InvestmentManager from "@/components/dashboard/InvestmentManager";
 
 export default async function Dashboard() {
 
@@ -51,7 +52,7 @@ export default async function Dashboard() {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-sm font-mono text-mint-500 tracking-wider uppercase">2. Database Transaction Feed</h2>
             <span className="text-xs font-mono bg-zinc-900 px-2.5 py-1 rounded border border-white/5 text-gray-400">
-             Top {transactions.length}  Records
+             Recent {transactions.length}  Records
             </span>
           </div>
 
@@ -81,6 +82,7 @@ export default async function Dashboard() {
           )}
         </div>
       </div>
+      <InvestmentManager/>
     </div>
   );
 }

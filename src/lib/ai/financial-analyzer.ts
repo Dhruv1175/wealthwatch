@@ -16,7 +16,7 @@ interface OutlierNode {
 }
 
 interface TrendNode {
-  label: string; // Day name, Date string, or Month string depending on scaling
+  label: string; 
   spent: number;
   earned: number;
 }
@@ -36,8 +36,6 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
   try {
     const now = new Date();
     let startDate = new Date();
-
-    // 1. Calculate precise lookback date boundaries
     if (timeframe === "week") {
       startDate.setDate(now.getDate() - 7);
     } else if (timeframe === "month") {
@@ -46,7 +44,6 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
       startDate.setFullYear(now.getFullYear() - 1);
     }
 
-    // Pull transactions within the chosen time window
     const transactions = await prisma.transaction.findMany({
       where: {
         userId,
@@ -54,10 +51,11 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
       },
       orderBy: { date: "asc" },
     });
+    const activeInvestments = await prisma.investment.findMany({ where: { userId } });
 
     if (transactions.length === 0) return null;
 
-    // 2. Compute Primary Aggregations & Categorical Matrix
+
     let totalCredit = 0;
     let totalDebit = 0;
     const categoriesMap: Record<string, number> = {};
@@ -83,8 +81,6 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
 
     const burnRatePercentage = totalCredit > 0 ? (totalDebit / totalCredit) * 100 : 100;
 
-    // 3. Statistical Outlier Detection using the Interquartile Range (IQR) Rule
-    // Anomaly threshold = Q3 + (1.5 * IQR). Perfect for highlighting erratic spending blocks.
     const outliers: OutlierNode[] = [];
     if (allDebits.length > 0) {
       const sortedDebits = [...allDebits].sort((a, b) => a - b);
@@ -105,8 +101,6 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
         }
       });
     }
-
-    // 4. Temporal Trend Mapping & Adaptive Scaling Label Generation
     const trendMap: Record<string, { spent: number; earned: number }> = {};
 
     transactions.forEach((tx) => {
@@ -114,11 +108,11 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
       const d = tx.date;
 
       if (timeframe === "week") {
-        label = d.toLocaleDateString("en-IN", { weekday: "short" }); // e.g., "Mon", "Tue"
+        label = d.toLocaleDateString("en-IN", { weekday: "short" }); 
       } else if (timeframe === "month") {
-        label = `${d.getDate()} ${d.toLocaleDateString("en-IN", { month: "short" })}`; // e.g., "12 Apr"
+        label = `${d.getDate()} ${d.toLocaleDateString("en-IN", { month: "short" })}`; 
       } else {
-        label = d.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }); // e.g., "Apr 26"
+        label = d.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }); 
       }
 
       if (!trendMap[label]) trendMap[label] = { spent: 0, earned: 0 };
@@ -135,38 +129,39 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
       earned: parseFloat(data.earned.toFixed(2)),
     }));
 
-    // 5. Deep-Reasoning Strategic LLM Evaluation
     const dynamicAnalysisPrompt = `
-      You are the ultimate automated financial intelligence director for WealthWatch.
-      Analyze the user's spending telemetry for the following explicit timeframe window: ${timeframe.toUpperCase()}.
-      
-      STATISTICAL PROFILE DATA:
-      - Scope Context: ${timeframe.toUpperCase()} Lookback View
-      - Gross Income (Credits): ₹${totalCredit.toFixed(2)}
-      - Gross Spending (Debits): ₹${totalDebit.toFixed(2)}
-      - Burn Velocity Ratio: ${burnRatePercentage.toFixed(1)}% of capital consumed this period.
-      - Sector Inefficiency Breakdown: ${JSON.stringify(categoriesMap)}
-      - Detected Outliers/Anomalies: ${JSON.stringify(outliers)}
-      
-      CRITICAL ADVISORY MANDATE:
-      Provide a highly rigorous, specific, and macro-aware financial health critique based on the specified timeframe.
-      - If evaluating a WEEK, focus on tactical, micro-spending traps, behavioral adjustments, and instant balance corrections.
-      - If evaluating a MONTH, focus on systemic leaking subscription patterns, fixed overhead structural adjustments, and variance analysis.
-      - If evaluating a YEAR, focus on long-term compound growth trajectories, macro asset allocations, structural income scaling metrics, and big-ticket capital anomalies.
-      
-      OUTPUT FORMAT CONTRACT:
-      Generate exactly three concise, dense sections:
-      ### 1. Temporal Health Diagnosis
-      [Detailed critique of their burn velocity ratio specifically inside this ${timeframe} scope]
-      
-      ### 2. Anomaly & Outlier Assessment
-      [Critique of their specific transaction outliers or warning patterns if non-essential spikes are present]
-      
-      ### 3. Tactical Wealth Capital Allocation
-      [Precision high-yield wealth strategies, indicating how to lower spending variables or redirect liquidity into compounding vectors]
+  You are the Chief Investment Officer and elite wealth director engine for WealthWatch.
+  Analyze the user's micro cash flow alongside their live asset allocations for the ${timeframe.toUpperCase()} timeframe.
+  
+  CASH FLOW PROFILE DATA:
+  - Scope Perimeter: ${timeframe.toUpperCase()} Lookback Window View
+  - Total Cash Inflow (Credits): ₹${totalCredit.toFixed(2)}
+  - Total Cash Outflow (Debits): ₹${totalDebit.toFixed(2)}
+  - Cash Burn Velocity: ${burnRatePercentage.toFixed(1)}% of capital consumed.
+  - Core Expense Anomalies/Outliers: ${JSON.stringify(outliers)}
+  
+  INVESTMENT PORTFOLIO MATRICES:
+  - Current Asset Holdings Ledger: ${JSON.stringify(activeInvestments.map(i => ({ symbol: i.symbol, name: i.name, type: i.type, totalCost: i.sharesOwned * i.avgBuyPrice })))}
 
-      Do not include generic prefaces, conversational intros, filler phrasing, or markdown code blocks.
-    `;
+  CRITICAL STRATEGIC MANDATE:
+  Synthesize a comprehensive wealth critique matching their temporal constraints:
+  - If evaluating a WEEK: Focus on instant capital preservation, cutting cash leakages, and routing immediate micro-surpluses directly into their active investments.
+  - If evaluating a MONTH: Evaluate their monthly recurring SIP impact against their monthly income pools. Advise whether they can safely ramp up SIP allocations or if they need to protect cash reserves.
+  - If evaluating a YEAR: Focus on macro financial freedom trajectories, capital asset growth, rebalancing equity risk profiles, and wealth compounding targets.
+  
+  OUTPUT FORMAT CONTRACT:
+  Generate exactly three concise, dense sections:
+  ### 1. Temporal Health Diagnosis
+  [Critique of cash flow burn velocity and liquidity health]
+  
+  ### 2. Portfolio Optimization & Rebalancing
+  [Explicit tactical advice regarding their active Equity/SIP holdings based on their current cash-flow baseline]
+  
+  ### 3. High-Yield Capital Allocation
+  [Precision wealth growth playbook outlining how to safely compound cash lines into long-term assets]
+
+  Do not include generic prefaces, conversational fillers, or markdown code blocks.
+`;
 
     const aiResponse = await groq.chat.completions.create({
       messages: [{ role: "system", content: dynamicAnalysisPrompt }],
