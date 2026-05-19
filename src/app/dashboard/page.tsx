@@ -7,6 +7,8 @@ import SummarySection from "@/components/dashboard/SummarySection";
 import AnalyticsSkeleton from "@/components/dashboard/AnalyticsSkeleton";
 import InvestmentManager from "@/components/dashboard/InvestmentManager";
 import MacroNewsPanel from "@/components/dashboard/MacroNewsPanel";
+import UserProfileDropdown from "@/components/dashboard/UserProfileDropdown";
+
 
 interface PageProps {
   searchParams: Promise<{ timeframe?: string }>;
@@ -20,12 +22,27 @@ export default async function Dashboard({ searchParams }: PageProps) {
 
   const resolvedParams = await searchParams;
   const timeframe = resolvedParams.timeframe || "month";
-  const transactions = await prisma.transaction.findMany({
-    where: { userId: session.user.id },
-    orderBy: { date: "desc" },
-    take: 10,
-  });
+ const [transactions, totalInvestmentsCount] = await Promise.all([
+    prisma.transaction.findMany({
+      where: { userId: session.user.id },
+      orderBy: { date: "desc" },
+      take: 10,
+    }),
+    prisma.investment.count({
+      where: { userId: session.user.id }
+    })
+  ]);
 
+  const aggregateStats = {
+    totalTransactions: transactions.length,
+    totalInvestments: totalInvestmentsCount
+  };
+
+  // Safe inline server function closure to securely eliminate driver leaks
+  async function handleGlobalSignOut() {
+    "use server";
+    await signOut({ redirectTo: "/" });
+  }
   return (
     <div className="p-8 text-white min-h-screen bg-black font-sans">
       {/* Header Section */}
@@ -34,14 +51,15 @@ export default async function Dashboard({ searchParams }: PageProps) {
           <h1 className="text-2xl font-bold tracking-tight">WealthWatch Core</h1>
           <p className="text-sm text-gray-500">Welcome, {session.user?.name} (ID: {session.user?.id})</p>
         </div>
-        <form action={async () => {
-          "use server";
-          await signOut({ redirectTo: "/" });
-        }}>
-          <button type="submit" className="bg-zinc-900 border border-white/10 px-4 py-2 text-sm font-medium hover:bg-zinc-800 transition-colors">
-            Sign Out
-          </button>
-        </form>
+      <UserProfileDropdown 
+          sessionUser={{
+            id: session.user.id,
+            name: session.user.name,
+            email: session.user.email
+          }}
+          stats={aggregateStats}
+          signOutAction={handleGlobalSignOut}
+        />
       </div>
 
       {/* PROGRESSIVE SSR STREAMING LAYER */}
