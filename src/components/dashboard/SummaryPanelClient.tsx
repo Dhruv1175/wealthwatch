@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts";
 import { TrendingUp, AlertTriangle, Calendar, Layers } from "lucide-react";
@@ -16,9 +16,9 @@ const BRAND_COLORS = ["#00f2fe", "#4facfe", "#0066ff", "#7f00ff", "#ff007f", "#3
 export default function SummaryPanelClient({ initialReport, defaultTimeframe, children }: SummaryPanelClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [showInRupees, setShowInRupees] = useState<boolean>(false);
 
   function handleTimeframeChange(newTimeframe: string) {
-    // SSR URL State synchronization pattern
     startTransition(() => {
       router.push(`/dashboard?timeframe=${newTimeframe}`);
     });
@@ -63,6 +63,45 @@ export default function SummaryPanelClient({ initialReport, defaultTimeframe, ch
         </div>
       </div>
 
+      {/* Real-time Currency Translation Utility Widget */}
+      <div className="border border-white/10 bg-zinc-950 p-4 my-6 font-mono text-xs rounded">
+        <div className="flex justify-between items-center border-b border-white/5 pb-2 mb-3">
+          <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+            Global Macro Assets Tracker (1 USD = ₹{initialReport.usdInrRate?.toFixed(2)})
+          </span>
+          <button
+            onClick={() => setShowInRupees(!showInRupees)}
+            className="border border-white/10 px-2 py-1 bg-black text-[10px] uppercase font-bold hover:bg-zinc-900 transition-colors tracking-wide text-sky-400 flex items-center gap-1.5"
+          >
+            Currency Canvas Variant: <span className="text-white font-black">{showInRupees ? "INR (₹)" : "USD ($)"}</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {initialReport.commodities?.map((item: any) => {
+            const isUp = item.changeUSD >= 0;
+            const displayPrice = showInRupees ? item.priceINR : item.priceUSD;
+            const currencySymbol = showInRupees ? "₹" : "$";
+            const fractionDigits = showInRupees ? 0 : 2;
+
+            return (
+              <div key={item.symbol} className="bg-black border border-white/[0.03] p-3 flex justify-between items-center hover:border-zinc-800 transition-all">
+                <div>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider block">{item.name}</span>
+                  <span className="text-gray-200 font-bold text-sm mt-0.5 block">
+                    {currencySymbol}{displayPrice.toLocaleString("en-IN", { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })}
+                  </span>
+                </div>
+                <div className={`text-right font-bold ${isUp ? "text-emerald-400" : "text-red-400"}`}>
+                  <div>{isUp ? "+" : ""}{showInRupees ? (item.changeUSD * initialReport.usdInrRate).toFixed(0) : item.changeUSD.toFixed(2)}</div>
+                  <div className="text-[10px] font-medium opacity-80">({item.changePercentage.toFixed(2)}%)</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Chart Layout Matrices */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 border border-white/10 bg-zinc-950 p-5">
@@ -70,8 +109,8 @@ export default function SummaryPanelClient({ initialReport, defaultTimeframe, ch
             <TrendingUp className="w-4 h-4 text-sky-400" />
             <h3 className="text-xs font-mono uppercase tracking-wider text-gray-400">Cash Flow Velocity Progression</h3>
           </div>
-          <div className="h-64 w-full text-xs font-mono">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-64 min-h-[260px] w-full text-xs font-mono">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={initialReport.trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <XAxis dataKey="label" stroke="#555" tickLine={false} />
                 <YAxis stroke="#555" tickLine={false} />
@@ -89,8 +128,8 @@ export default function SummaryPanelClient({ initialReport, defaultTimeframe, ch
             <Layers className="w-4 h-4 text-sky-400" />
             <h3 className="text-xs font-mono uppercase tracking-wider text-gray-400">Volumetric Sectors Allocation</h3>
           </div>
-          <div className="h-48 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-48 min-h-[190px] w-full">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <PieChart>
                 <Pie data={initialReport.categoryBreakdown} cx="50%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={4} dataKey="value">
                   {initialReport.categoryBreakdown.map((entry: any, index: number) => (

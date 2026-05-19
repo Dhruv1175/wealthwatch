@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import Groq from "groq-sdk";
+import { getMacroCommodities } from "../market/stock-engine";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -29,15 +30,13 @@ interface AdvancedAnalysisReport {
   categoryBreakdown: { name: string; value: number }[];
   trendData: TrendNode[];
   outliers: OutlierNode[];
+  commodities: any[]
+  usdInrRate : number
 }
 
-/**
- * OPTIMIZATION: Computes numerical aggregates instantly via DB-level functions.
- * Execution target: < 15ms.
- */
 export async function generateAdvancedSummary(userId: string, timeframe: Timeframe): Promise<AdvancedAnalysisReport | null> {
   try {
-    // Dynamic Anchor Point Discovery based on newest statement data
+    
     const latestTransaction = await prisma.transaction.findFirst({
       where: { userId },
       orderBy: { date: "desc" },
@@ -57,7 +56,7 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
     }
 
     // Parallel execution of native database aggregations
-    const [creditAggregation, debitAggregation, categoryGroupings, transactions] = await Promise.all([
+    const [creditAggregation, debitAggregation, categoryGroupings, transactions,commodityPayload] = await Promise.all([
       prisma.transaction.aggregate({
         where: { userId, date: { gte: startDate, lte: anchorDate }, amount: { gt: 0 } },
         _sum: { amount: true }
@@ -74,7 +73,8 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
       prisma.transaction.findMany({
         where: { userId, date: { gte: startDate, lte: anchorDate } },
         orderBy: { date: "asc" }
-      })
+      }),
+      getMacroCommodities()
     ]);
 
     if (transactions.length === 0) return null;
@@ -148,6 +148,8 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
       categoryBreakdown,
       trendData,
       outliers,
+      commodities:commodityPayload.commodities,
+      usdInrRate : commodityPayload.usdInrRate
     };
   } catch (error) {
     console.error("Advanced Analytics Core Breakdown:", error);

@@ -8,6 +8,11 @@ datasource db {
   provider  = "postgresql"
 }
 
+enum UserTier{
+  BASIC
+  PRO
+}
+
 model User {
   id    String @id @default(cuid())
   name  String?
@@ -15,6 +20,8 @@ model User {
   password String?
   emailVerified DateTime?
   image String?
+  tier  UserTier @default(BASIC)
+  subscriptionEnd  DateTime?
   accounts Account[]
   investments   Investment[]
   systemevent   SystemEvent[]

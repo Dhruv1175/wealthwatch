@@ -3,9 +3,10 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import prisma from "@/lib/db";
 import UploadForm from "@/components/dashboard/UploadForm";
-import SummarySection from "./SummarySection";
+import SummarySection from "@/components/dashboard/SummarySection";
 import AnalyticsSkeleton from "@/components/dashboard/AnalyticsSkeleton";
 import InvestmentManager from "@/components/dashboard/InvestmentManager";
+import MacroNewsPanel from "@/components/dashboard/MacroNewsPanel";
 
 interface PageProps {
   searchParams: Promise<{ timeframe?: string }>;
@@ -19,8 +20,6 @@ export default async function Dashboard({ searchParams }: PageProps) {
 
   const resolvedParams = await searchParams;
   const timeframe = resolvedParams.timeframe || "month";
-
-  // Fast Database Transaction Feed Lookups (Optimized with indices)
   const transactions = await prisma.transaction.findMany({
     where: { userId: session.user.id },
     orderBy: { date: "desc" },
@@ -46,22 +45,29 @@ export default async function Dashboard({ searchParams }: PageProps) {
       </div>
 
       {/* PROGRESSIVE SSR STREAMING LAYER */}
-      {/* Changing the key causes Next.js to swap out the content instantly with an analytics skeleton wrapper */}
       <Suspense key={timeframe} fallback={<AnalyticsSkeleton />}>
         <SummarySection searchParams={{ timeframe }} />
       </Suspense>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
-        {/* Left Column: AI PDF Upload Test Bench */}
-        <div className="md:col-span-1 border border-white/10 p-6 bg-zinc-950">
-          <h2 className="text-sm font-mono text-sky-400 tracking-wider uppercase mb-4">1. Test AI PDF Pipeline</h2>
-          <p className="text-xs text-gray-400 mb-6 leading-relaxed">
-            Upload an unencrypted passbook or bank statement PDF. The client will stream the document directly to your API route, invoking the custom Groq engine.
-          </p>
-          <UploadForm />
+        {/* Left Column Stack Wrapper: Holds both the PDF test bench and live news panel inside column 1 */}
+        <div className="md:col-span-1 space-y-6">
+          <div className="border border-white/10 p-6 bg-zinc-950">
+            <h2 className="text-sm font-mono text-sky-400 tracking-wider uppercase mb-4">1. Test AI PDF Pipeline</h2>
+            <p className="text-xs text-gray-400 mb-6 leading-relaxed">
+              Upload an unencrypted passbook or bank statement PDF. The client will stream the document directly to your API route, invoking the custom Groq engine.
+            </p>
+            <UploadForm />
+          </div>
+          
+          <div className="border border-white/10 p-6 bg-zinc-950">
+            <Suspense fallback={<div className="h-40 bg-zinc-900 animate-pulse font-mono text-[10px] text-zinc-500 p-4">CONNECTING REALTIME LIVE MACRO MEDIA CHANNELS...</div>}>
+              <MacroNewsPanel userId={session.user.id} />
+            </Suspense>
+          </div>
         </div>
 
-        {/* Right Column: Live Transaction Feed */}
+        {/* Right Column: Live Transaction Feed occupying remaining 2 columns */}
         <div className="md:col-span-2 border border-white/10 p-6 bg-zinc-950">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-sm font-mono text-emerald-400 tracking-wider uppercase">2. Database Transaction Feed</h2>
