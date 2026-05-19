@@ -26,6 +26,7 @@ model User {
   investments   Investment[]
   systemevent   SystemEvent[]
   transactions Transaction[]
+  auditLogs    SecurityAuditLog[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -96,4 +97,15 @@ model SystemEvent {
   @@index([userId, createdAt])
 }
 
+
+model SecurityAuditLog {
+  id String  @id @default(cuid())
+  userId String
+  event String
+  ipAddress String
+  userAgent String
+  createdAt DateTime @default(now())
+  user User @relation(fields:[userId],references:[id],onDelete: Cascade)
+  @@index([userId, createdAt])
+}
 

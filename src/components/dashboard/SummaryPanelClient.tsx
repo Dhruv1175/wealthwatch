@@ -19,8 +19,10 @@ export default function SummaryPanelClient({ initialReport, defaultTimeframe, ch
   const [showInRupees, setShowInRupees] = useState<boolean>(false);
 
   function handleTimeframeChange(newTimeframe: string) {
+    const params = new URLSearchParams(window.location.search);
+    params.set("timeframe", newTimeframe);
     startTransition(() => {
-      router.push(`/dashboard?timeframe=${newTimeframe}`);
+      router.push(`/dashboard?${params.toString()}`, { scroll: false });
     });
   }
 
