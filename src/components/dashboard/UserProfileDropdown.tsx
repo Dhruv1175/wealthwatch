@@ -2,14 +2,15 @@
 
 import { useState, useRef, useEffect } from "react";
 import { User, CreditCard, LogOut, X, Edit3, Check, Upload } from "lucide-react";
-import { useNotifications } from "./NotificationContext";
+import { useNotifications } from "@/components/dashboard/NotificationContext";
+import RazorpayUpgradeButton from "@/components/dashboard/RazorpayUpgradeButton";
 
 interface UserProfileDropdownProps {
   sessionUser: {
     id: string;
     name?: string | null;
     email?: string | null;
-    image?: string | null; // 🔥 Maps image profile strings directly from Prisma
+    image?: string | null;
   };
   stats: {
     totalTransactions: number;
@@ -151,9 +152,16 @@ export default function UserProfileDropdown({ sessionUser, stats, signOutAction 
             >
               <User className="w-3.5 h-3.5 text-sky-400" /> Profile Overview & Stats
             </button>
-            <div className="w-full flex items-center gap-2.5 px-3 py-2 text-gray-500 bg-zinc-950 text-left opacity-40 cursor-not-allowed select-none">
-              <CreditCard className="w-3.5 h-3.5 text-amber-500" /> Manage Subscriptions
-            </div>
+            <RazorpayUpgradeButton 
+    sessionUser={{
+      id: sessionUser.id,
+      name: currentName,
+      email: sessionUser.email,
+      image: currentImageUrl
+    }}
+    buttonText="Upgrade to Pro Tier (₹1,299)"
+    className="w-full px-3 py-2 text-gray-400 hover:text-white hover:bg-zinc-900 text-left transition-colors"
+  />
           </div>
 
           <div className="p-1 border-t border-white/5 bg-black/20">
