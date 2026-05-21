@@ -52,14 +52,15 @@ export default async function Dashboard({ searchParams }: PageProps) {
           <p className="text-sm text-gray-500">Welcome, {session.user?.name} (ID: {session.user?.id})</p>
         </div>
       <UserProfileDropdown 
-          sessionUser={{
-            id: session.user.id,
-            name: session.user.name,
-            email: session.user.email
-          }}
-          stats={aggregateStats}
-          signOutAction={handleGlobalSignOut}
-        />
+  sessionUser={{
+    id: session.user.id,
+    name: session.user.name,
+    email: session.user.email,
+    image: session.user.image // 🔥 Forwards the live Google profile image property value cleanly down to your UI matrix
+  }}
+  stats={aggregateStats}
+  signOutAction={handleGlobalSignOut}
+/>
       </div>
 
       {/* PROGRESSIVE SSR STREAMING LAYER */}

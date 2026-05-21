@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { User, CreditCard, LogOut, X, Edit3, Check, Award } from "lucide-react";
+import { User, CreditCard, LogOut, X, Edit3, Check, Upload } from "lucide-react";
 import { useNotifications } from "./NotificationContext";
 
 interface UserProfileDropdownProps {
@@ -9,15 +9,14 @@ interface UserProfileDropdownProps {
     id: string;
     name?: string | null;
     email?: string | null;
+    image?: string | null; // 🔥 Maps image profile strings directly from Prisma
   };
   stats: {
     totalTransactions: number;
     totalInvestments: number;
   };
-  signOutAction: () => Promise<void>; // Server Action configuration hook
+  signOutAction: () => Promise<void>;
 }
-
-const AVATAR_OPTIONS = ["⚡", "🛡️", "📈", "💼", "🤖", "🪙"];
 
 export default function UserProfileDropdown({ sessionUser, stats, signOutAction }: UserProfileDropdownProps) {
   const { triggerToast } = useNotifications();
@@ -25,7 +24,7 @@ export default function UserProfileDropdown({ sessionUser, stats, signOutAction 
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   
   const [currentName, setCurrentName] = useState<string>(sessionUser.name || "WealthUser");
-  const [currentAvatar, setCurrentAvatar] = useState<string>("⚡");
+  const [currentImageUrl, setCurrentImageUrl] = useState<string>(sessionUser.image || "");
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -40,6 +39,42 @@ export default function UserProfileDropdown({ sessionUser, stats, signOutAction 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Inject Cloudinary Core Upload Widget Pipeline script onto layout context
+  useEffect(() => {
+    if (showEditModal && !window.hasOwnProperty("cloudinary")) {
+      const script = document.createElement("script");
+      script.src = "https://upload-widget.cloudinary.com/global/all.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, [showEditModal]);
+
+  function handleTriggerUploadWidget() {
+    // Check if CDN loaded safely
+    if (!(window as any).cloudinary) {
+      triggerToast("Widget Initialization Fault", "Cloudinary media script CDN is currently unreachable.", "WARNING");
+      return;
+    }
+
+    const myWidget = (window as any).cloudinary.createUploadWidget(
+      {
+        cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "your_cloud_name", 
+        uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "your_unsigned_preset",
+        sources: ["local", "url", "camera"],
+        multiple: false,
+        theme: "minimal"
+      },
+      (error: any, result: any) => {
+        if (!error && result && result.event === "success") {
+          // Capture the fresh permanent cloud asset address string directly
+          setCurrentImageUrl(result.info.secure_url);
+          triggerToast("Media File Uploaded", "Asset staged successfully. Commit changes to save.", "INFO");
+        }
+      }
+    );
+    myWidget.open();
+  }
+
   async function handleSaveChanges(e: React.FormEvent) {
     e.preventDefault();
     if (!currentName.trim()) return;
@@ -49,7 +84,10 @@ export default function UserProfileDropdown({ sessionUser, stats, signOutAction 
       const res = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: currentName.trim(), avatar: currentAvatar })
+        body: JSON.stringify({ 
+          name: currentName.trim(), 
+          image: currentImageUrl // 🔥 Transmits link down to PostgreSQL updates
+        })
       });
 
       if (res.ok) {
@@ -61,29 +99,49 @@ export default function UserProfileDropdown({ sessionUser, stats, signOutAction 
       }
     } catch (err) {
       console.error(err);
-      triggerToast("Connection Fault", "Failed to update profile changes.", "WARNING");
+      triggerToast("Connection Fault", "Failed to compile profile data changes.", "WARNING");
     } finally {
       setIsSaving(false);
     }
   }
 
+  // Helper utility to calculate structural text-based initials fallbacks safely
+  const userInitials = currentName.trim().substring(0, 1).toUpperCase() || "W";
+
   return (
     <div className="relative font-mono text-xs text-white" ref={dropdownRef}>
-      {/* Target Avatar Trigger Element */}
+      {/* Dynamic Avatar Image / Initial Badge Trigger element */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 border border-white/10 p-1.5 bg-zinc-950 hover:bg-zinc-900 transition-colors rounded select-none"
+        className="flex items-center gap-2 border border-white/10 p-1 bg-zinc-950 hover:bg-zinc-900 transition-colors rounded select-none"
       >
-        <span className="text-sm bg-zinc-900 w-6 h-6 flex items-center justify-center rounded border border-white/5">{currentAvatar}</span>
+        {currentImageUrl ? (
+          <img 
+            src={currentImageUrl} 
+            alt="Profile Avatar" 
+            className="w-6 h-6 rounded border border-white/5 object-cover"
+            referrerPolicy="no-referrer" // Prevents Google imagery access blocks
+          />
+        ) : (
+          <span className="text-xs font-bold bg-zinc-900 w-6 h-6 flex items-center justify-center rounded border border-white/10 text-sky-400 font-mono">
+            {userInitials}
+          </span>
+        )}
         <span className="text-gray-300 max-w-[120px] truncate pr-1 hidden sm:inline">{currentName}</span>
       </button>
 
-      {/* Dynamic Dropdown Floating Shell Block */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 bg-zinc-950 border border-white/10 shadow-2xl z-50">
-          <div className="p-4 border-b border-white/5 bg-black/40">
-            <div className="font-bold text-gray-200 truncate">{currentName}</div>
-            <div className="text-[10px] text-gray-500 truncate mt-0.5">{sessionUser.email}</div>
+          <div className="p-4 border-b border-white/5 bg-black/40 flex items-center gap-3">
+            {currentImageUrl ? (
+              <img src={currentImageUrl} className="w-8 h-8 rounded object-cover border border-white/10" referrerPolicy="no-referrer" />
+            ) : (
+              <span className="w-8 h-8 rounded bg-zinc-900 border border-white/5 flex items-center justify-center font-bold text-sky-400 text-sm">{userInitials}</span>
+            )}
+            <div className="overflow-hidden">
+              <div className="font-bold text-gray-200 truncate">{currentName}</div>
+              <div className="text-[10px] text-gray-500 truncate mt-0.5">{sessionUser.email}</div>
+            </div>
           </div>
 
           <div className="p-1 space-y-0.5">
@@ -98,7 +156,6 @@ export default function UserProfileDropdown({ sessionUser, stats, signOutAction 
             </div>
           </div>
 
-          {/* Clean execution wrapper linking straight to the server context route */}
           <div className="p-1 border-t border-white/5 bg-black/20">
             <form action={signOutAction} className="w-full">
               <button
@@ -112,14 +169,10 @@ export default function UserProfileDropdown({ sessionUser, stats, signOutAction 
         </div>
       )}
 
-      {/* Profile Overview & Edit Modal Component Overlay Layer */}
       {showEditModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-zinc-950 border border-white/10 max-w-md w-full p-6 relative shadow-2xl">
-            <button
-              onClick={() => setShowEditModal(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
-            >
+            <button onClick={() => setShowEditModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
               <X className="w-4 h-4" />
             </button>
 
@@ -127,7 +180,6 @@ export default function UserProfileDropdown({ sessionUser, stats, signOutAction 
               User Profile Matrix Control
             </h3>
 
-            {/* Static Aggregated Metric Analytics Summary Panel Block */}
             <div className="grid grid-cols-2 gap-3 text-center mb-6">
               <div className="bg-black border border-white/5 p-2 rounded">
                 <div className="text-[10px] text-gray-500 uppercase">Positions Tracked</div>
@@ -139,7 +191,6 @@ export default function UserProfileDropdown({ sessionUser, stats, signOutAction 
               </div>
             </div>
 
-            {/* Edit Field Management Workspace Form */}
             <form onSubmit={handleSaveChanges} className="space-y-4">
               <div>
                 <label className="text-[10px] text-gray-500 uppercase block mb-1.5 font-bold">Workspace Name</label>
@@ -155,35 +206,28 @@ export default function UserProfileDropdown({ sessionUser, stats, signOutAction 
                 </div>
               </div>
 
+              {/* Dynamic Free-Tier Cloudinary Upload Block Action zone */}
               <div>
-                <label className="text-[10px] text-gray-500 uppercase block mb-2 font-bold">Identity Symbol (Avatar)</label>
-                <div className="grid grid-cols-6 gap-2">
-                  {AVATAR_OPTIONS.map((avatar) => (
-                    <button
-                      key={avatar}
-                      type="button"
-                      onClick={() => setCurrentAvatar(avatar)}
-                      className={`py-2 text-lg border transition-all rounded bg-black ${currentAvatar === avatar ? "border-sky-400 bg-sky-950/20" : "border-white/5 hover:border-white/20"}`}
-                    >
-                      {avatar}
-                    </button>
-                  ))}
+                <label className="text-[10px] text-gray-500 uppercase block mb-2 font-bold">Workspace Profile Photo</label>
+                <div className="flex items-center gap-4 bg-black p-3 border border-white/5">
+                  {currentImageUrl ? (
+                    <img src={currentImageUrl} className="w-12 h-12 rounded object-cover border border-white/10" referrerPolicy="no-referrer" />
+                  ) : (
+                    <div className="w-12 h-12 bg-zinc-900 border border-white/5 flex items-center justify-center font-bold text-lg text-sky-400">{userInitials}</div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleTriggerUploadWidget}
+                    className="flex items-center gap-1.5 border border-white/10 bg-zinc-900 hover:bg-zinc-800 text-[10px] uppercase font-bold tracking-wide px-3 py-2 transition-colors text-sky-400"
+                  >
+                    <Upload className="w-3.5 h-3.5" /> Upload Custom Image
+                  </button>
                 </div>
               </div>
 
               <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 border border-white/5 text-gray-400 hover:text-white transition-colors"
-                >
-                  Dismiss
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-4 py-2 bg-white text-black font-black hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center gap-1.5 rounded"
-                >
+                <button type="button" onClick={() => setShowEditModal(false)} className="px-4 py-2 border border-white/5 text-gray-400 hover:text-white transition-colors">Dismiss</button>
+                <button type="submit" disabled={isSaving} className="px-4 py-2 bg-white text-black font-black hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center gap-1.5 rounded">
                   <Check className="w-3.5 h-3.5" /> {isSaving ? "Saving..." : "Commit Structure"}
                 </button>
               </div>
