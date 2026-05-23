@@ -207,7 +207,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
 
         {/* ── INVESTMENT MANAGER ──────────────────────────────────────────────── */}
         <div className="border-t border-border pt-8">
-          <InvestmentManager  />
+          <InvestmentManager totalInvestmentsCount={totalInvestmentsCount} />
         </div>
       </main>
     </div>

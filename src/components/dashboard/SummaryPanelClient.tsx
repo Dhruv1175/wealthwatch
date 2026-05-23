@@ -1,45 +1,69 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  Legend, PieChart, Pie, Cell,
+} from "recharts";
 import { TrendingUp, AlertTriangle, Calendar, Layers } from "lucide-react";
 
 interface SummaryPanelClientProps {
   initialReport: any;
   defaultTimeframe: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-const BRAND_COLORS = ["#00f2fe", "#4facfe", "#0066ff", "#7f00ff", "#ff007f", "#333333"];
+const CHART_COLORS = ["#0EA5E9", "#22C55E", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899"];
 
-export default function SummaryPanelClient({ initialReport, defaultTimeframe, children }: SummaryPanelClientProps) {
+const TOOLTIP_STYLE = {
+  backgroundColor: "hsl(0 0% 5%)",
+  border:          "1px solid hsl(0 0% 100% / 0.08)",
+  color:           "#fff",
+  fontFamily:      "var(--font-mono, monospace)",
+  fontSize:        "11px",
+};
+
+export default function SummaryPanelClient({
+  initialReport,
+  defaultTimeframe,
+  children,
+}: SummaryPanelClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [showInRupees, setShowInRupees] = useState<boolean>(false);
+  const [showInRupees, setShowInRupees] = useState(false);
 
-  function handleTimeframeChange(newTimeframe: string) {
+  function handleTimeframeChange(tf: string) {
     const params = new URLSearchParams(window.location.search);
-    params.set("timeframe", newTimeframe);
+    params.set("timeframe", tf);
     startTransition(() => {
       router.push(`/dashboard?${params.toString()}`, { scroll: false });
     });
   }
 
+  const report = initialReport;
+
   return (
-    <div className={`space-y-6 mb-8 transition-opacity duration-200 ${isPending ? "opacity-50" : "opacity-100"}`}>
-      {/* Control Row */}
-      <div className="flex justify-between items-center border-b border-white/10 pb-4">
+    <div className={`space-y-6 transition-opacity duration-200 ${isPending ? "opacity-40 pointer-events-none" : ""}`}>
+
+      {/* ── CONTROL ROW ─────────────────────────────────────────────────────── */}
+      <div className="flex justify-between items-center border-b border-border pb-4">
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-sky-400" />
-          <h2 className="text-sm font-mono font-bold tracking-wider uppercase text-gray-300">Financial Analytics Core</h2>
+          <Calendar className="w-3.5 h-3.5 text-accent" />
+          <h2 className="text-xs font-mono font-bold tracking-widest uppercase text-muted-foreground">
+            Financial Analytics
+          </h2>
         </div>
-        <div className="flex bg-zinc-950 border border-white/5 p-1 rounded font-mono text-xs">
-          {["week", "month", "year"].map((t) => (
+        <div className="flex border border-border overflow-hidden">
+          {(["week", "month", "year"] as const).map((t) => (
             <button
               key={t}
               onClick={() => handleTimeframeChange(t)}
-              className={`px-3 py-1.5 uppercase transition-all font-medium ${defaultTimeframe === t ? "bg-white text-black font-bold" : "text-gray-400 hover:text-white"}`}
+              className={`px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest font-bold transition-colors ${
+                defaultTimeframe === t
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground hover:bg-surface"
+              }`}
             >
               {t}
             </button>
@@ -47,147 +71,147 @@ export default function SummaryPanelClient({ initialReport, defaultTimeframe, ch
         </div>
       </div>
 
-      {/* Metric Visual Cards */}
+      {/* ── PRIMARY METRIC CARDS ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="border border-white/5 bg-zinc-950 p-4 font-mono">
-          <span className="text-[10px] text-gray-500 uppercase tracking-wide">Inflow Pool</span>
-          <div className="text-xl font-black text-emerald-400 mt-1">₹{initialReport.totalCredit.toLocaleString("en-IN")}</div>
+        <div className="panel p-4 space-y-2">
+          <p className="data-label">Inflow Pool</p>
+          <p className="data-value text-positive">₹{report.totalCredit.toLocaleString("en-IN")}</p>
         </div>
-        <div className="border border-white/5 bg-zinc-950 p-4 font-mono">
-          <span className="text-[10px] text-gray-500 uppercase tracking-wide">Outflow Volume</span>
-          <div className="text-xl font-black text-red-400 mt-1">₹{initialReport.totalDebit.toLocaleString("en-IN")}</div>
+        <div className="panel p-4 space-y-2">
+          <p className="data-label">Outflow Volume</p>
+          <p className="data-value text-negative">₹{report.totalDebit.toLocaleString("en-IN")}</p>
         </div>
-        <div className={`border p-4 font-mono ${initialReport.burnRatePercentage >= 70 ? "border-red-900 bg-red-950/10" : "border-white/5 bg-zinc-950"}`}>
-          <span className="text-[10px] text-gray-500 uppercase tracking-wide">Velocity Core Burn</span>
-          <div className={`text-xl font-black mt-1 ${initialReport.burnRatePercentage >= 70 ? "text-red-400" : "text-sky-400"}`}>
-            {initialReport.burnRatePercentage.toFixed(1)}%
+        <div className={`panel p-4 space-y-2 ${report.burnRatePercentage >= 70 ? "border-negative/30" : ""}`}>
+          <p className="data-label">Burn Rate</p>
+          <p className={`data-value ${report.burnRatePercentage >= 70 ? "text-negative" : "text-accent"}`}>
+            {report.burnRatePercentage.toFixed(1)}%
+          </p>
+        </div>
+      </div>
+
+      {/* ── MACRO COMMODITIES TRACKER ────────────────────────────────────────── */}
+      {report.commodities && (
+        <div className="panel p-4">
+          <div className="flex justify-between items-center border-b border-border pb-3 mb-4">
+            <span className="data-label">
+              Global Macro Tracker · 1 USD = ₹{report.usdInrRate?.toFixed(2)}
+            </span>
+            <button
+              onClick={() => setShowInRupees((v) => !v)}
+              className="text-[10px] font-mono border border-border px-2.5 py-1 text-accent hover:bg-surface transition-colors uppercase tracking-wide"
+            >
+              {showInRupees ? "₹ INR" : "$ USD"}
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {report.commodities.map((item: any) => {
+              const isUp         = item.changeUSD >= 0;
+              const displayPrice = showInRupees ? item.priceINR : item.priceUSD;
+              const symbol       = showInRupees ? "₹" : "$";
+              const digits       = showInRupees ? 0 : 2;
+              return (
+                <div key={item.symbol} className="flex justify-between items-center bg-surface hover:bg-surface-raised transition-colors px-4 py-3">
+                  <div>
+                    <p className="data-label mb-0.5">{item.name}</p>
+                    <p className="text-sm font-black font-mono tabular-nums text-foreground">
+                      {symbol}{displayPrice.toLocaleString("en-IN", { minimumFractionDigits: digits, maximumFractionDigits: digits })}
+                    </p>
+                  </div>
+                  <div className={`text-right font-mono text-xs font-bold ${isUp ? "text-positive" : "text-negative"}`}>
+                    <div>{isUp ? "+" : ""}{showInRupees ? (item.changeUSD * report.usdInrRate).toFixed(0) : item.changeUSD.toFixed(2)}</div>
+                    <div className="text-[9px] opacity-70">({item.changePercentage.toFixed(2)}%)</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Real-time Currency Translation Utility Widget */}
-      <div className="border border-white/10 bg-zinc-950 p-4 my-6 font-mono text-xs rounded">
-        <div className="flex justify-between items-center border-b border-white/5 pb-2 mb-3">
-          <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
-            Global Macro Assets Tracker (1 USD = ₹{initialReport.usdInrRate?.toFixed(2)})
-          </span>
-          <button
-            onClick={() => setShowInRupees(!showInRupees)}
-            className="border border-white/10 px-2 py-1 bg-black text-[10px] uppercase font-bold hover:bg-zinc-900 transition-colors tracking-wide text-sky-400 flex items-center gap-1.5"
-          >
-            Currency Canvas Variant: <span className="text-white font-black">{showInRupees ? "INR (₹)" : "USD ($)"}</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {initialReport.commodities?.map((item: any) => {
-            const isUp = item.changeUSD >= 0;
-            const displayPrice = showInRupees ? item.priceINR : item.priceUSD;
-            const currencySymbol = showInRupees ? "₹" : "$";
-            const fractionDigits = showInRupees ? 0 : 2;
-
-            return (
-              <div key={item.symbol} className="bg-black border border-white/[0.03] p-3 flex justify-between items-center hover:border-zinc-800 transition-all">
-                <div>
-                  <span className="text-[10px] text-gray-500 uppercase tracking-wider block">{item.name}</span>
-                  <span className="text-gray-200 font-bold text-sm mt-0.5 block">
-                    {currencySymbol}{displayPrice.toLocaleString("en-IN", { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })}
-                  </span>
-                </div>
-                <div className={`text-right font-bold ${isUp ? "text-emerald-400" : "text-red-400"}`}>
-                  <div>{isUp ? "+" : ""}{showInRupees ? (item.changeUSD * initialReport.usdInrRate).toFixed(0) : item.changeUSD.toFixed(2)}</div>
-                  <div className="text-[10px] font-medium opacity-80">({item.changePercentage.toFixed(2)}%)</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Chart Layout Matrices */}
+      {/* ── CHARTS ──────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 border border-white/10 bg-zinc-950 p-5">
+        {/* Bar chart */}
+        <div className="lg:col-span-2 panel p-5">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-4 h-4 text-sky-400" />
-            <h3 className="text-xs font-mono uppercase tracking-wider text-gray-400">Cash Flow Velocity Progression</h3>
+            <TrendingUp className="w-3.5 h-3.5 text-accent" />
+            <h3 className="data-label">Cash Flow Velocity</h3>
           </div>
-          <div className="h-64 min-h-[260px] w-full text-xs font-mono">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <BarChart data={initialReport.trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="label" stroke="#555" tickLine={false} />
-                <YAxis stroke="#555" tickLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: "#09090b", borderColor: "#222", color: "#fff" }} />
-                <Legend />
-                <Bar dataKey="earned" name="Credits" fill="#34d399" maxBarSize={30} />
-                <Bar dataKey="spent" name="Debits" fill="#f87171" maxBarSize={30} />
+          <div className="h-60 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={report.trendData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                <XAxis dataKey="label" stroke="hsl(0 0% 45%)" tickLine={false} tick={{ fontSize: 10 }} />
+                <YAxis stroke="hsl(0 0% 45%)" tickLine={false} tick={{ fontSize: 10 }} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Legend wrapperStyle={{ fontSize: "10px", fontFamily: "monospace" }} />
+                <Bar dataKey="earned" name="Credits" fill="#22C55E" maxBarSize={28} radius={[2,2,0,0]} />
+                <Bar dataKey="spent"  name="Debits"  fill="#EF4444" maxBarSize={28} radius={[2,2,0,0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="border border-white/10 bg-zinc-950 p-5">
+        {/* Pie chart */}
+        <div className="panel p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Layers className="w-4 h-4 text-sky-400" />
-            <h3 className="text-xs font-mono uppercase tracking-wider text-gray-400">Volumetric Sectors Allocation</h3>
+            <Layers className="w-3.5 h-3.5 text-accent" />
+            <h3 className="data-label">Sector Allocation</h3>
           </div>
-          <div className="h-48 min-h-[190px] w-full">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <div className="h-44 w-full">
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={initialReport.categoryBreakdown} cx="50%" cy="50%" innerRadius={55} outerRadius={75} paddingAngle={4} dataKey="value">
-                  {initialReport.categoryBreakdown.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={BRAND_COLORS[index % BRAND_COLORS.length]} />
+                <Pie data={report.categoryBreakdown} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={3} dataKey="value">
+                  {report.categoryBreakdown.map((_: any, idx: number) => (
+                    <Cell key={idx} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "#09090b", borderColor: "#222", color: "#fff" }} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="max-h-24 overflow-y-auto space-y-1 font-mono text-[10px] mt-2 pr-1">
-            {initialReport.categoryBreakdown.map((item: any, idx: number) => (
-              <div key={item.name} className="flex justify-between items-center text-gray-400">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLORS[idx % BRAND_COLORS.length] }} />
-                  <span className="truncate max-w-[120px]">{item.name}</span>
+          <div className="space-y-1.5 max-h-24 overflow-y-auto scrollbar-thin mt-3">
+            {report.categoryBreakdown.map((item: any, idx: number) => (
+              <div key={item.name} className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS[idx % CHART_COLORS.length] }} />
+                  <span className="text-[10px] font-mono text-muted-foreground truncate max-w-[110px]">{item.name}</span>
                 </div>
-                <span className="text-gray-200 font-bold">₹{item.value.toFixed(0)}</span>
+                <span className="text-[10px] font-mono font-bold text-foreground tabular-nums">₹{item.value.toFixed(0)}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Outliers Node Display */}
-      <div className="border border-white/10 bg-zinc-950 p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle className="w-4 h-4 text-amber-500" />
-          <h3 className="text-xs font-mono uppercase tracking-wider text-gray-400">Statistical Anomalies & Outliers Tracked</h3>
+      {/* ── OUTLIERS ────────────────────────────────────────────────────────── */}
+      <div className="panel p-5">
+        <div className="flex items-center gap-2 mb-3 border-b border-border pb-3">
+          <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+          <h3 className="data-label">Anomalies &amp; Outliers</h3>
         </div>
-        {initialReport.outliers.length === 0 ? (
-          <div className="text-xs font-mono text-zinc-600 border border-dashed border-white/5 py-4 text-center">
-            No major single-point capital leakage deviations caught within this temporal window perimeter.
+        {report.outliers.length === 0 ? (
+          <div className="text-center py-6 text-muted-foreground text-[11px] font-mono border border-dashed border-border">
+            No capital leakage deviations detected.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-40 overflow-y-auto pr-1">
-            {initialReport.outliers.map((out: any) => (
-              <div key={out.id} className="bg-black border border-amber-900/30 p-3 font-mono text-xs flex justify-between items-start gap-4">
-                <div>
-                  <div className="text-gray-200 font-medium truncate max-w-[200px]">{out.description}</div>
-                  <div className="text-[10px] text-gray-500 mt-1">{out.date} • {out.reason}</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-40 overflow-y-auto scrollbar-thin">
+            {report.outliers.map((out: any) => (
+              <div key={out.id} className="bg-surface border border-warning/20 px-4 py-3 flex justify-between items-start gap-4">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-foreground truncate">{out.description}</p>
+                  <p className="text-[10px] font-mono text-muted-foreground mt-1">{out.date} · {out.reason}</p>
                 </div>
-                <span className="text-amber-500 font-bold text-sm shrink-0">₹{out.amount.toFixed(0)}</span>
+                <span className="text-sm font-black font-mono tabular-nums text-warning shrink-0">₹{out.amount.toFixed(0)}</span>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Server Component Stream Drop Zone */}
-      <div className={`border p-6 font-sans bg-zinc-950 relative overflow-hidden ${initialReport.burnRatePercentage >= 70 ? "border-red-900/60" : "border-white/10"}`}>
-        <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
-          <span className={`w-2 h-2 rounded-full ${initialReport.burnRatePercentage >= 70 ? "bg-red-500 animate-ping" : "bg-sky-500"}`} />
-          <h3 className="text-xs font-mono uppercase tracking-wider font-black text-gray-400">
-            WealthWatch Executive Strategic Review
-          </h3>
+      {/* ── AI ADVICE SLOT ──────────────────────────────────────────────────── */}
+      <div className={`panel p-6 ${report.burnRatePercentage >= 70 ? "border-negative/25" : ""}`}>
+        <div className="flex items-center gap-2 border-b border-border pb-3 mb-4">
+          <span className={`w-1.5 h-1.5 rounded-full ${report.burnRatePercentage >= 70 ? "bg-negative animate-live-pulse" : "bg-accent"}`} />
+          <h3 className="data-label">WealthWatch Executive Review</h3>
         </div>
         {children}
       </div>

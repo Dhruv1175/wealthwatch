@@ -1,51 +1,75 @@
 import { getPortfolioNews } from "@/lib/market/stock-engine";
 import prisma from "@/lib/db";
-import { Newspaper, ExternalLink } from "lucide-react";
+import { Newspaper, ExternalLink, Radio } from "lucide-react";
 
-export default async function MacroNewsPanel({ userId }: { userId: string }) {
-  // Grab active tickers to customize the news context matching what they own
+interface MacroNewsPanelProps {
+  userId: string;
+}
+
+export default async function MacroNewsPanel({ userId }: MacroNewsPanelProps) {
   const userInvestments = await prisma.investment.findMany({
-    where: { userId },
+    where:  { userId },
     select: { symbol: true },
-    take: 3
+    take:   5,
   });
 
-  const tickers = userInvestments.map(i => i.symbol);
-  const news = await getPortfolioNews(tickers);
+  const tickers = userInvestments.map((i) => i.symbol);
+  const news    = await getPortfolioNews(tickers);
 
   return (
-    <div className="border border-white/10 bg-zinc-950 p-5 font-mono text-xs h-full flex flex-col justify-between">
-      <div>
-        <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
-          <Newspaper className="w-4 h-4 text-sky-400" />
-          <h3 className="uppercase tracking-widest text-gray-400 font-bold">Portfolio Intelligence News</h3>
+    <div className="space-y-3 font-mono text-xs">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border pb-2.5">
+        <div className="flex items-center gap-2">
+          <Newspaper className="w-3.5 h-3.5 text-accent" />
+          <span className="data-label">Portfolio Intelligence</span>
         </div>
-
-        {news.length === 0 ? (
-          <div className="text-zinc-600 text-center py-8 border border-dashed border-white/5">
-            No market developments reported for active holdings.
-          </div>
-        ) : (
-          <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
-            {news.map((item, idx) => (
-              <div key={idx} className="border-b border-white/[0.03] pb-3 last:border-0 last:pb-0">
-                <a 
-                  href={item.link} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-gray-200 font-sans font-medium text-xs hover:text-sky-400 transition-colors block leading-snug"
-                >
-                  {item.title}
-                </a>
-                <div className="flex justify-between items-center text-[10px] text-gray-500 mt-2">
-                  <span>{item.publisher}</span>
-                  <span className="opacity-60 flex items-center gap-0.5">{item.providerPublishTime}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="flex items-center gap-1.5">
+          <Radio className="w-2.5 h-2.5 text-positive animate-live-pulse" />
+          <span className="text-[9px] text-positive/70 uppercase tracking-wider">Live</span>
+        </div>
       </div>
+
+      {/* Ticker chips */}
+      {tickers.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {tickers.map((t) => (
+            <span key={t} className="ticker-chip">{t}</span>
+          ))}
+        </div>
+      )}
+
+      {/* News items */}
+      {news.length === 0 ? (
+        <div className="text-center py-10 border border-dashed border-border text-muted-foreground text-[11px]">
+          No market developments for active holdings.
+        </div>
+      ) : (
+        <div className="space-y-px max-h-[320px] overflow-y-auto scrollbar-thin">
+          {news.map((item, idx) => (
+            <div
+              key={idx}
+              className="bg-surface hover:bg-surface-raised transition-colors p-3 space-y-2"
+            >
+              <a
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground/80 font-sans font-medium text-xs hover:text-accent transition-colors block leading-snug"
+              >
+                {item.title}
+              </a>
+              <div className="flex items-center justify-between text-[9px] text-muted-foreground">
+                <span className="uppercase tracking-wider">{item.publisher}</span>
+                <span className="flex items-center gap-1 opacity-60">
+                  {item.providerPublishTime}
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

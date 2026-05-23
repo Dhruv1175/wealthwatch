@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import SummaryPanelClient from "./SummaryPanelClient";
 import StreamingAdviceCard from "./StreamingAdviceCard";
 import { Suspense } from "react";
+import RazorpayUpgradeButton from "./RazorpayUpgradeButton";
 
 interface SummarySectionProps {
   searchParams: { timeframe?: string };
@@ -12,56 +13,88 @@ interface SummarySectionProps {
 export default async function SummarySection({ searchParams }: SummarySectionProps) {
   const session = await auth();
   if (!session?.user?.id) {
-    return <div className="text-xs font-mono text-red-500">Identity validation expired.</div>;
-  }
-
-  const timeframe = (searchParams?.timeframe as Timeframe) || "month";
-  const userMetadata = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { tier: true, subscriptionEnd: true }
-  });
-  const isPro = userMetadata?.tier === "PRO" && (userMetadata.subscriptionEnd ? userMetadata.subscriptionEnd > new Date() : false);
-  if (timeframe === "year" && !isPro) {
     return (
-      <div className="border border-amber-500/20 bg-amber-950/10 p-8 font-mono text-xs text-center text-amber-400 space-y-3 rounded my-4">
-        <div className="font-bold uppercase tracking-widest">Premium Analytics Blocked</div>
-        <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
-          The macro annual lookback trend visualizer is restricted to subscribers. Upgrade your account plan to unlock long-term compounding forecasts.
-        </p>
-        <button className="bg-amber-500 text-black font-black px-4 py-1.5 uppercase tracking-wider hover:bg-amber-400 transition-all mt-2">
-          Unlock Pro Access ($15/Mo)
-        </button>
+      <div className="text-xs font-mono text-negative border border-negative/20 bg-negative/5 px-4 py-3">
+        Identity validation expired. Please sign in again.
       </div>
     );
   }
-  
-  // Fast Database Calculations Execute Instantly via native aggregates (<15ms)
+
+  const timeframe = (searchParams?.timeframe as Timeframe) || "month";
+
+  const userMetadata = await prisma.user.findUnique({
+    where:  { id: session.user.id },
+    select: { tier: true, subscriptionEnd: true, name: true, email: true, image: true },
+  });
+
+  const isPro =
+    userMetadata?.tier === "PRO" &&
+    (userMetadata.subscriptionEnd
+      ? userMetadata.subscriptionEnd > new Date()
+      : false);
+
+  /* Year-view gate */
+  if (timeframe === "year" && !isPro) {
+    return (
+      <div className="panel p-8 space-y-4 text-center border-premium/25">
+        <div className="w-10 h-10 border border-premium/30 bg-premium/10 flex items-center justify-center mx-auto">
+          <span className="text-premium text-lg">★</span>
+        </div>
+        <div>
+          <p className="data-label text-premium mb-1">Pro Feature</p>
+          <h3 className="text-lg font-black tracking-tight text-foreground">Annual Lookback Locked</h3>
+          <p className="text-sm text-muted-foreground font-mono mt-2 max-w-md mx-auto leading-relaxed">
+            The macro annual trend visualizer is restricted to Pro subscribers. Upgrade to unlock long-term compounding forecasts.
+          </p>
+        </div>
+        <RazorpayUpgradeButton
+          sessionUser={{
+            id:    session.user.id,
+            name:  userMetadata?.name,
+            email: userMetadata?.email,
+            image: userMetadata?.image,
+          }}
+          buttonText="Upgrade to Pro Tier (₹1,299)"
+          className="inline-flex items-center gap-2 bg-premium hover:bg-premium/90 text-background font-black text-xs uppercase tracking-widest px-6 py-3 transition-colors"
+        />
+      </div>
+    );
+  }
+
   const report = await generateAdvancedSummary(session.user.id, timeframe);
 
   if (!report) {
     return (
-      <div className="text-center py-16 border border-dashed border-white/5 text-xs font-mono text-zinc-600">
-        No records captured for this period perimeter. Try parsing a statement file.
+      <div className="py-20 text-center border border-dashed border-border text-muted-foreground text-xs font-mono">
+        No records captured for this period. Try parsing a statement file.
       </div>
     );
   }
 
   return (
     <SummaryPanelClient initialReport={report} defaultTimeframe={timeframe}>
-      {/* Only block and delay the isolated AI element using an inline suspense placeholder */}
-      <Suspense 
+      <Suspense
         fallback={
-          <div className="space-y-3 font-mono text-xs text-zinc-500 animate-pulse py-4">
-            <div className="h-3 bg-zinc-900 w-1/4 rounded mb-2" />
-            <div className="h-2 bg-zinc-900 w-full rounded animate-pulse" />
-            <div className="h-2 bg-zinc-900 w-5/6 rounded animate-pulse" />
-            <div className="h-2 bg-zinc-900 w-2/3 rounded animate-pulse" />
+          <div className="space-y-3 py-4">
+            {[100, 80, 60].map((w) => (
+              <div key={w} className={`h-2 skeleton rounded`} style={{ width: `${w}%` }} />
+            ))}
           </div>
         }
-      >{isPro ? (
-          <StreamingAdviceCard report={report} userId={session.user.id}/>
+      >
+        {isPro ? (
+          <StreamingAdviceCard report={report} userId={session.user.id} />
         ) : (
-          <div className="text-zinc-500 text-xs font-mono py-2">Upgrade to Pro Tier to unlock real-time financial advisor insights blocks.</div>
+          <div className="flex items-center justify-between py-2">
+            <p className="text-[11px] font-mono text-muted-foreground">
+              Upgrade to Pro to unlock AI financial advisor insights.
+            </p>
+            <RazorpayUpgradeButton
+              sessionUser={{ id: session.user.id, name: userMetadata?.name, email: userMetadata?.email, image: userMetadata?.image }}
+              buttonText="Unlock Pro"
+              className="flex items-center gap-1.5 text-[11px] font-mono text-premium hover:text-premium/80 transition-colors"
+            />
+          </div>
         )}
       </Suspense>
     </SummaryPanelClient>
