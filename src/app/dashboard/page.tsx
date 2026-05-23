@@ -8,7 +8,8 @@ import AnalyticsSkeleton from "@/components/dashboard/AnalyticsSkeleton";
 import InvestmentManager from "@/components/dashboard/InvestmentManager";
 import MacroNewsPanel from "@/components/dashboard/MacroNewsPanel";
 import UserProfileDropdown from "@/components/dashboard/UserProfileDropdown";
-
+import Link from "next/link";
+import { Activity, ArrowUpRight, FileText, Newspaper, ReceiptText } from "lucide-react";
 
 interface PageProps {
   searchParams: Promise<{ timeframe?: string }>;
@@ -16,112 +17,199 @@ interface PageProps {
 
 export default async function Dashboard({ searchParams }: PageProps) {
   const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/");
-  }
+  if (!session?.user?.id) redirect("/");
 
   const resolvedParams = await searchParams;
   const timeframe = resolvedParams.timeframe || "month";
- const [transactions, totalInvestmentsCount] = await Promise.all([
+
+  const [transactions, totalInvestmentsCount] = await Promise.all([
     prisma.transaction.findMany({
-      where: { userId: session.user.id },
+      where:   { userId: session.user.id },
       orderBy: { date: "desc" },
-      take: 10,
+      take:    10,
     }),
     prisma.investment.count({
-      where: { userId: session.user.id }
-    })
+      where: { userId: session.user.id },
+    }),
   ]);
 
   const aggregateStats = {
     totalTransactions: transactions.length,
-    totalInvestments: totalInvestmentsCount
+    totalInvestments:  totalInvestmentsCount,
   };
 
-  // Safe inline server function closure to securely eliminate driver leaks
   async function handleGlobalSignOut() {
     "use server";
     await signOut({ redirectTo: "/" });
   }
+
   return (
-    <div className="p-8 text-white min-h-screen bg-black font-sans">
-      {/* Header Section */}
-      <div className="flex justify-between items-center border-b border-white/10 pb-6 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">WealthWatch Core</h1>
-          <p className="text-sm text-gray-500">Welcome, {session.user?.name} (ID: {session.user?.id})</p>
-        </div>
-      <UserProfileDropdown 
-  sessionUser={{
-    id: session.user.id,
-    name: session.user.name,
-    email: session.user.email,
-    image: session.user.image // 🔥 Forwards the live Google profile image property value cleanly down to your UI matrix
-  }}
-  stats={aggregateStats}
-  signOutAction={handleGlobalSignOut}
-/>
-      </div>
+    <div className="min-h-screen bg-background text-foreground font-sans">
 
-      {/* PROGRESSIVE SSR STREAMING LAYER */}
-      <Suspense key={timeframe} fallback={<AnalyticsSkeleton />}>
-        <SummarySection searchParams={{ timeframe }} />
-      </Suspense>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
-        {/* Left Column Stack Wrapper: Holds both the PDF test bench and live news panel inside column 1 */}
-        <div className="md:col-span-1 space-y-6">
-          <div className="border border-white/10 p-6 bg-zinc-950">
-            <h2 className="text-sm font-mono text-sky-400 tracking-wider uppercase mb-4">1. Test AI PDF Pipeline</h2>
-            <p className="text-xs text-gray-400 mb-6 leading-relaxed">
-              Upload an unencrypted passbook or bank statement PDF. The client will stream the document directly to your API route, invoking the custom Groq engine.
-            </p>
-            <UploadForm />
-          </div>
-          
-          <div className="border border-white/10 p-6 bg-zinc-950">
-            <Suspense fallback={<div className="h-40 bg-zinc-900 animate-pulse font-mono text-[10px] text-zinc-500 p-4">CONNECTING REALTIME LIVE MACRO MEDIA CHANNELS...</div>}>
-              <MacroNewsPanel userId={session.user.id} />
-            </Suspense>
-          </div>
-        </div>
-
-        {/* Right Column: Live Transaction Feed occupying remaining 2 columns */}
-        <div className="md:col-span-2 border border-white/10 p-6 bg-zinc-950">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-sm font-mono text-emerald-400 tracking-wider uppercase">2. Database Transaction Feed</h2>
-            <span className="text-xs font-mono bg-zinc-900 px-2.5 py-1 rounded border border-white/5 text-gray-400">
-              Recent {transactions.length} Records
+      {/* ── TOP NAV BAR ───────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between px-6 h-14">
+          {/* Wordmark */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-7 h-7 border border-border bg-surface">
+              <Activity className="w-3.5 h-3.5 text-accent" />
+            </div>
+            <span className="text-sm font-black tracking-tight text-foreground">
+              WealthWatch
+            </span>
+            <span className="hidden sm:block text-[10px] font-mono text-muted-foreground border border-border px-1.5 py-0.5 uppercase tracking-wider">
+              Core
             </span>
           </div>
 
-          {transactions.length === 0 ? (
-            <div className="text-center py-12 border border-dashed border-white/5 text-gray-600 text-sm font-mono">
-              No ledger records caught. Execute a PDF ingest to populate this panel automatically.
+          {/* Right cluster */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard/billing"
+              className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-muted-foreground hover:text-foreground border border-border px-3 py-1.5 transition-colors hover:bg-surface"
+            >
+              Billing
+              <ArrowUpRight className="w-3 h-3" />
+            </Link>
+            <UserProfileDropdown
+              sessionUser={{
+                id:    session.user.id,
+                name:  session.user.name,
+                email: session.user.email,
+                image: session.user.image,
+              }}
+              stats={aggregateStats}
+              signOutAction={handleGlobalSignOut}
+            />
+          </div>
+        </div>
+      </header>
+
+      {/* ── PAGE CONTENT ──────────────────────────────────────────────────────── */}
+      <main className="px-6 py-8 space-y-8 max-w-[1400px] mx-auto">
+
+        {/* Page heading */}
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="data-label mb-1">Authenticated workspace</p>
+            <h1 className="text-2xl font-black tracking-tight text-foreground">
+              {session.user?.name?.split(" ")[0] ?? "Dashboard"}
+            </h1>
+          </div>
+          <p className="hidden md:block text-[10px] font-mono text-muted-foreground">
+            ID:{" "}
+            <span className="text-foreground/60">
+              {session.user?.id.slice(0, 20)}…
+            </span>
+          </p>
+        </div>
+
+        {/* ── SUMMARY + ANALYTICS ─────────────────────────────────────────────── */}
+        <Suspense key={timeframe} fallback={<AnalyticsSkeleton />}>
+          <SummarySection searchParams={{ timeframe }} />
+        </Suspense>
+
+        {/* ── THREE-COLUMN LOWER GRID ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          {/* ── COL 1: PDF PIPELINE ─────────────────────────────────────────── */}
+          <div className="lg:col-span-3 space-y-6">
+            <div className="panel p-5 space-y-4">
+              <div className="flex items-center gap-2 divider pb-3">
+                <FileText className="w-3.5 h-3.5 text-accent" />
+                <h2 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold">
+                  AI PDF Pipeline
+                </h2>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed font-mono">
+                Drop an unencrypted passbook or bank statement. Streamed
+                directly to the Groq extraction engine.
+              </p>
+              <UploadForm />
             </div>
-          ) : (
-            <div className="max-h-[500px] overflow-y-auto space-y-2 pr-2">
-              {transactions.map((tx) => (
-                <div 
-                  key={tx.id} 
-                  className="flex justify-between items-center py-3 px-4 bg-black border border-white/[0.04] text-xs font-mono"
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="text-gray-200 text-sm font-sans font-medium">{tx.description}</span>
-                    <span className="text-gray-500 text-[10px] uppercase tracking-wider">
-                      {tx.category || "UNCLASSIFIED"} • {new Date(tx.date).toLocaleDateString("en-IN")}
+
+            {/* ── NEWS PANEL ────────────────────────────────────────────────── */}
+            <div className="panel p-5">
+              <Suspense
+                fallback={
+                  <div className="h-48 skeleton" />
+                }
+              >
+                <MacroNewsPanel userId={session.user.id} />
+              </Suspense>
+            </div>
+          </div>
+
+          {/* ── COL 2–3: TRANSACTION FEED ───────────────────────────────────── */}
+          <div className="lg:col-span-9 panel p-5">
+            <div className="flex items-center justify-between divider pb-3 mb-4">
+              <div className="flex items-center gap-2">
+                <ReceiptText className="w-3.5 h-3.5 text-positive" />
+                <h2 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold">
+                  Transaction Feed
+                </h2>
+              </div>
+              <span className="text-[10px] font-mono bg-muted border border-border px-2 py-1 text-muted-foreground">
+                {transactions.length} records
+              </span>
+            </div>
+
+            {transactions.length === 0 ? (
+              <div className="py-20 text-center border border-dashed border-border text-muted-foreground text-xs font-mono">
+                No ledger records. Execute a PDF ingest to populate.
+              </div>
+            ) : (
+              <div className="space-y-px max-h-[520px] overflow-y-auto scrollbar-thin">
+                {/* Column headers */}
+                <div className="grid grid-cols-[1fr_auto_auto] gap-4 px-4 py-2 text-[9px] font-mono uppercase tracking-widest text-muted-foreground border-b border-border">
+                  <span>Description</span>
+                  <span>Category</span>
+                  <span className="text-right">Amount</span>
+                </div>
+
+                {transactions.map((tx) => (
+                  <div
+                    key={tx.id}
+                    className="grid grid-cols-[1fr_auto_auto] gap-4 px-4 py-3 bg-surface hover:bg-surface-raised transition-colors items-center group"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate leading-tight">
+                        {tx.description}
+                      </p>
+                      <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
+                        {new Date(tx.date).toLocaleDateString("en-IN", {
+                          day:   "2-digit",
+                          month: "short",
+                          year:  "numeric",
+                        })}
+                      </p>
+                    </div>
+
+                    <span className="ticker-chip hidden sm:inline">
+                      {tx.category ?? "Unclassified"}
+                    </span>
+
+                    <span
+                      className={`text-sm font-black font-mono tabular-nums ${
+                        tx.amount >= 0 ? "text-positive" : "text-negative"
+                      }`}
+                    >
+                      {tx.amount >= 0
+                        ? `+₹${tx.amount.toFixed(2)}`
+                        : `-₹${Math.abs(tx.amount).toFixed(2)}`}
                     </span>
                   </div>
-                  <span className={`text-sm font-bold ${tx.amount >= 0 ? "text-emerald-400" : "text-red-500"}`}>
-                    {tx.amount >= 0 ? `+₹${tx.amount.toFixed(2)}` : `-₹${Math.abs(tx.amount).toFixed(2)}`}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-      <InvestmentManager />
+
+        {/* ── INVESTMENT MANAGER ──────────────────────────────────────────────── */}
+        <div className="border-t border-border pt-8">
+          <InvestmentManager  />
+        </div>
+      </main>
     </div>
   );
 }

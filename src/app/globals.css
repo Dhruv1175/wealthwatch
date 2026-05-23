@@ -2,20 +2,152 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+/* ── DESIGN TOKEN DEFINITIONS ──────────────────────────────────────────────────
+   All semantic Tailwind tokens resolve to these HSL variables.
+   Editing here updates every component that uses token classes.
+   ─────────────────────────────────────────────────────────────────────────── */
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Surfaces */
+    --background:        0 0% 0%;        /* #000000 — absolute black canvas    */
+    --foreground:        0 0% 93%;       /* #EDEDED — primary text             */
+
+    --card:              0 0% 5%;        /* #0D0D0D — raised card surface      */
+    --card-foreground:   0 0% 88%;       /* #E0E0E0 — text on cards            */
+
+    --surface:           0 0% 7%;        /* #121212 — component surface        */
+    --surface-raised:    0 0% 10%;       /* #1A1A1A — hover / elevated surface */
+
+    --muted:             0 0% 12%;       /* #1F1F1F — muted backgrounds        */
+    --muted-foreground:  0 0% 45%;       /* #737373 — secondary / dim text     */
+
+    /* Borders & inputs */
+    --border:            0 0% 100% / 0.08;   /* white/8 — razor hairline border   */
+    --input:             0 0% 100% / 0.06;   /* white/6 — form field border       */
+    --ring:              204 94% 49%;        /* sky-500 — focus ring              */
+
+    /* Accent — interactive highlight (sky blue) */
+    --accent:            204 94% 49%;    /* #0EA5E9 */
+    --accent-foreground: 0 0% 100%;
+
+    /* Functional signals */
+    --positive:          142 71% 45%;    /* #22C55E emerald                    */
+    --negative:          0 84% 60%;      /* #EF4444 red                        */
+    --warning:           38 92% 50%;     /* #F59E0B amber                      */
+    --info:              204 94% 49%;    /* #0EA5E9 sky                        */
+    --premium:           38 92% 50%;     /* #F59E0B amber gold — Pro/billing   */
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ── BASE RESETS ───────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  /* Monospaced number cells — zero-width space trick keeps columns aligned */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ── SCROLLBAR STYLING ─────────────────────────────────────────────────────── */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(0 0% 18%) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(0 0% 18%);
+    border-radius: 2px;
+  }
+
+  /* Skeleton shimmer utility */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      hsl(0 0% 10%) 25%,
+      hsl(0 0% 14%) 50%,
+      hsl(0 0% 10%) 75%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+}
+
+/* ── CUSTOM COMPONENT LAYER ────────────────────────────────────────────────── */
+@layer components {
+  /* Panel — shared card container */
+  .panel {
+    @apply bg-card border border-border;
+  }
+
+  /* Data label — tiny all-caps monospace label above a number */
+  .data-label {
+    @apply text-[9px] font-mono uppercase tracking-[0.12em] text-muted-foreground;
+  }
+
+  /* Data value — large monospace financial figure */
+  .data-value {
+    @apply text-xl font-black font-mono tracking-tight tabular-nums;
+  }
+
+  /* Ticker chip — inline symbol badge */
+  .ticker-chip {
+    @apply text-[9px] font-mono font-bold uppercase border border-border
+           bg-surface text-muted-foreground px-1.5 py-0.5 tracking-wider;
+  }
+
+  /* Status badge */
+  .badge-basic {
+    @apply text-[9px] font-mono uppercase tracking-widest border border-border
+           bg-muted text-muted-foreground px-2 py-0.5;
+  }
+  .badge-pro {
+    @apply text-[9px] font-mono uppercase tracking-widest border border-premium/40
+           bg-premium/10 text-premium px-2 py-0.5;
+  }
+
+  /* Input field — unified dark form input */
+  .field {
+    @apply w-full bg-background border border-input px-3 py-2 text-xs font-mono
+           text-foreground placeholder:text-muted-foreground
+           focus:outline-none focus:border-ring/60 transition-colors;
+  }
+
+  /* Primary action button */
+  .btn-primary {
+    @apply w-full flex items-center justify-center gap-2
+           bg-foreground text-background font-black text-xs uppercase tracking-widest
+           py-2.5 px-4 transition-colors hover:bg-foreground/90
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply flex items-center gap-2 text-xs font-mono text-muted-foreground
+           hover:text-foreground transition-colors;
+  }
+
+  /* Divider */
+  .divider {
+    @apply border-t border-border;
+  }
 }
