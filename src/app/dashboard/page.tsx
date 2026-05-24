@@ -76,7 +76,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
               id:    session.user.id,
               name:  session.user.name,
               email: session.user.email,
-              image: session.user.image,
+              image: session.user.image || user?.image,
               tier:  user?.tier,
             }}
             stats={aggregateStats}
