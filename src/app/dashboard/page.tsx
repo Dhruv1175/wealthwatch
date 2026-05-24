@@ -8,8 +8,8 @@ import AnalyticsSkeleton from "@/components/dashboard/AnalyticsSkeleton";
 import InvestmentManager from "@/components/dashboard/InvestmentManager";
 import MacroNewsPanel from "@/components/dashboard/MacroNewsPanel";
 import UserProfileDropdown from "@/components/dashboard/UserProfileDropdown";
-import Link from "next/link";
-import { Activity, ArrowUpRight, FileText, Newspaper, ReceiptText } from "lucide-react";
+import Sidebar from "@/components/dashboard/Sidebar";
+import { FileText, Newspaper, ReceiptText, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 interface PageProps {
   searchParams: Promise<{ timeframe?: string }>;
@@ -22,14 +22,16 @@ export default async function Dashboard({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const timeframe = resolvedParams.timeframe || "month";
 
-  const [transactions, totalInvestmentsCount] = await Promise.all([
+  const [transactions, totalInvestmentsCount, user] = await Promise.all([
     prisma.transaction.findMany({
       where:   { userId: session.user.id },
       orderBy: { date: "desc" },
       take:    10,
     }),
-    prisma.investment.count({
-      where: { userId: session.user.id },
+    prisma.investment.count({ where: { userId: session.user.id } }),
+    prisma.user.findUnique({
+      where:  { id: session.user.id },
+      select: { tier: true, name: true, email: true, image: true },
     }),
   ]);
 
@@ -44,172 +46,236 @@ export default async function Dashboard({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <div className="app-shell">
+      <Sidebar />
 
-      {/* ── TOP NAV BAR ───────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center justify-between px-6 h-14">
-          {/* Wordmark */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-7 h-7 border border-border bg-surface">
-              <Activity className="w-3.5 h-3.5 text-accent" />
-            </div>
-            <span className="text-sm font-black tracking-tight text-foreground">
-              WealthWatch
-            </span>
-            <span className="hidden sm:block text-[10px] font-mono text-muted-foreground border border-border px-1.5 py-0.5 uppercase tracking-wider">
-              Core
-            </span>
-          </div>
-
-          {/* Right cluster */}
-          <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard/billing"
-              className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-muted-foreground hover:text-foreground border border-border px-3 py-1.5 transition-colors hover:bg-surface"
-            >
-              Billing
-              <ArrowUpRight className="w-3 h-3" />
-            </Link>
-            <UserProfileDropdown
-              sessionUser={{
-                id:    session.user.id,
-                name:  session.user.name,
-                email: session.user.email,
-                image: session.user.image,
-              }}
-              stats={aggregateStats}
-              signOutAction={handleGlobalSignOut}
-            />
-          </div>
-        </div>
-      </header>
-
-      {/* ── PAGE CONTENT ──────────────────────────────────────────────────────── */}
-      <main className="px-6 py-8 space-y-8 max-w-[1400px] mx-auto">
-
-        {/* Page heading */}
-        <div className="flex items-end justify-between">
+      {/* ── MAIN CONTENT ──────────────────────────────────────────────────── */}
+      <div className="app-content">
+        {/* ── TOP BAR ─────────────────────────────────────────────────────── */}
+        <header
+          className="sticky top-0 z-20 flex items-center justify-between px-8 h-16 shrink-0"
+          style={{
+            background:   "hsl(220 14% 6% / 0.85)",
+            backdropFilter: "blur(20px)",
+            borderBottom: "1px solid hsl(var(--border))",
+          }}
+        >
           <div>
-            <p className="data-label mb-1">Authenticated workspace</p>
-            <h1 className="text-2xl font-black tracking-tight text-foreground">
-              {session.user?.name?.split(" ")[0] ?? "Dashboard"}
-            </h1>
-          </div>
-          <p className="hidden md:block text-[10px] font-mono text-muted-foreground">
-            ID:{" "}
-            <span className="text-foreground/60">
-              {session.user?.id.slice(0, 20)}…
-            </span>
-          </p>
-        </div>
-
-        {/* ── SUMMARY + ANALYTICS ─────────────────────────────────────────────── */}
-        <Suspense key={timeframe} fallback={<AnalyticsSkeleton />}>
-          <SummarySection searchParams={{ timeframe }} />
-        </Suspense>
-
-        {/* ── THREE-COLUMN LOWER GRID ─────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-          {/* ── COL 1: PDF PIPELINE ─────────────────────────────────────────── */}
-          <div className="lg:col-span-3 space-y-6">
-            <div className="panel p-5 space-y-4">
-              <div className="flex items-center gap-2 divider pb-3">
-                <FileText className="w-3.5 h-3.5 text-accent" />
-                <h2 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold">
-                  AI PDF Pipeline
-                </h2>
-              </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed font-mono">
-                Drop an unencrypted passbook or bank statement. Streamed
-                directly to the Groq extraction engine.
-              </p>
-              <UploadForm />
-            </div>
-
-            {/* ── NEWS PANEL ────────────────────────────────────────────────── */}
-            <div className="panel p-5">
-              <Suspense
-                fallback={
-                  <div className="h-48 skeleton" />
-                }
-              >
-                <MacroNewsPanel userId={session.user.id} />
-              </Suspense>
-            </div>
-          </div>
-
-          {/* ── COL 2–3: TRANSACTION FEED ───────────────────────────────────── */}
-          <div className="lg:col-span-9 panel p-5">
-            <div className="flex items-center justify-between divider pb-3 mb-4">
-              <div className="flex items-center gap-2">
-                <ReceiptText className="w-3.5 h-3.5 text-positive" />
-                <h2 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold">
-                  Transaction Feed
-                </h2>
-              </div>
-              <span className="text-[10px] font-mono bg-muted border border-border px-2 py-1 text-muted-foreground">
-                {transactions.length} records
+            <p className="text-xl font-bold tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
+              Good {getGreeting()},{" "}
+              <span style={{ color: "hsl(var(--info))" }}>
+                {session.user?.name?.split(" ")[0] ?? "Investor"}
               </span>
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: "hsl(var(--foreground-tertiary))", fontFamily: "Geist Mono" }}>
+              {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+            </p>
+          </div>
+          <UserProfileDropdown
+            sessionUser={{
+              id:    session.user.id,
+              name:  session.user.name,
+              email: session.user.email,
+              image: session.user.image,
+            }}
+            stats={aggregateStats}
+            signOutAction={handleGlobalSignOut}
+          />
+        </header>
+
+        {/* ── PAGE BODY ───────────────────────────────────────────────────── */}
+        <main className="flex-1 px-8 py-8 space-y-8">
+
+          {/* ── ANALYTICS (SSR streamed) ─────────────────────────────────── */}
+          <Suspense key={timeframe} fallback={<AnalyticsSkeleton />}>
+            <SummarySection searchParams={{ timeframe }} />
+          </Suspense>
+
+          {/* ── SECONDARY ROW: PDF + NEWS + TRANSACTIONS ─────────────────── */}
+          <div className="grid grid-cols-12 gap-6">
+
+            {/* PDF pipeline */}
+            <div className="col-span-12 lg:col-span-4 space-y-6">
+              <div className="card p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ background: "hsl(var(--info-dim))", border: "1px solid hsl(var(--info) / 0.25)" }}
+                  >
+                    <FileText className="w-4 h-4" style={{ color: "hsl(var(--info))" }} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                      AI PDF Pipeline
+                    </p>
+                    <p className="label-xs">Groq extraction engine</p>
+                  </div>
+                </div>
+                <p className="text-xs leading-relaxed mb-5" style={{ color: "hsl(var(--foreground-secondary))" }}>
+                  Upload a passbook or bank statement. Transactions are automatically extracted and committed to your ledger.
+                </p>
+                <UploadForm />
+              </div>
+
+              {/* News panel */}
+              <div className="card p-6">
+                <Suspense fallback={
+                  <div className="space-y-3">
+                    {[80, 60, 70].map((w) => (
+                      <div key={w} className="skeleton h-10" style={{ width: `${w}%` }} />
+                    ))}
+                  </div>
+                }>
+                  <MacroNewsPanel userId={session.user.id} />
+                </Suspense>
+              </div>
             </div>
 
-            {transactions.length === 0 ? (
-              <div className="py-20 text-center border border-dashed border-border text-muted-foreground text-xs font-mono">
-                No ledger records. Execute a PDF ingest to populate.
-              </div>
-            ) : (
-              <div className="space-y-px max-h-[520px] overflow-y-auto scrollbar-thin">
-                {/* Column headers */}
-                <div className="grid grid-cols-[1fr_auto_auto] gap-4 px-4 py-2 text-[9px] font-mono uppercase tracking-widest text-muted-foreground border-b border-border">
-                  <span>Description</span>
-                  <span>Category</span>
-                  <span className="text-right">Amount</span>
-                </div>
-
-                {transactions.map((tx) => (
+            {/* Transaction feed */}
+            <div className="col-span-12 lg:col-span-8 card" id="transactions" >
+              <div
+                className="flex items-center justify-between px-6 py-4"
+                style={{ borderBottom: "1px solid hsl(var(--border))" }}
+              >
+                <div className="flex items-center gap-3">
                   <div
-                    key={tx.id}
-                    className="grid grid-cols-[1fr_auto_auto] gap-4 px-4 py-3 bg-surface hover:bg-surface-raised transition-colors items-center group"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ background: "hsl(var(--positive-dim))", border: "1px solid hsl(var(--positive) / 0.25)" }}
                   >
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate leading-tight">
-                        {tx.description}
-                      </p>
-                      <p className="text-[10px] font-mono text-muted-foreground mt-0.5">
-                        {new Date(tx.date).toLocaleDateString("en-IN", {
-                          day:   "2-digit",
-                          month: "short",
-                          year:  "numeric",
-                        })}
-                      </p>
-                    </div>
-
-                    <span className="ticker-chip hidden sm:inline">
-                      {tx.category ?? "Unclassified"}
-                    </span>
-
-                    <span
-                      className={`text-sm font-black font-mono tabular-nums ${
-                        tx.amount >= 0 ? "text-positive" : "text-negative"
-                      }`}
-                    >
-                      {tx.amount >= 0
-                        ? `+₹${tx.amount.toFixed(2)}`
-                        : `-₹${Math.abs(tx.amount).toFixed(2)}`}
-                    </span>
+                    <ReceiptText className="w-4 h-4" style={{ color: "hsl(var(--positive))" }} />
                   </div>
-                ))}
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                      Recent Transactions
+                    </p>
+                    <p className="label-xs">Live ledger feed</p>
+                  </div>
+                </div>
+                <span
+                  className="badge-muted"
+                  style={{ fontFamily: "Geist Mono" }}
+                >
+                  {transactions.length} records
+                </span>
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* ── INVESTMENT MANAGER ──────────────────────────────────────────────── */}
-        <div className="border-t border-border pt-8">
-          <InvestmentManager totalInvestmentsCount={totalInvestmentsCount} />
-        </div>
-      </main>
+              {transactions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-3">
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center"
+                    style={{ background: "hsl(var(--surface-raised))", border: "1px solid hsl(var(--border))" }}
+                  >
+                    <ReceiptText className="w-5 h-5" style={{ color: "hsl(var(--foreground-tertiary))" }} />
+                  </div>
+                  <p className="text-sm" style={{ color: "hsl(var(--foreground-tertiary))" }}>
+                    No ledger records. Upload a statement to get started.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Column headers */}
+                  <div
+                    className="grid items-center px-6 py-2.5"
+                    style={{
+                      gridTemplateColumns: "1fr 140px 100px",
+                      borderBottom: "1px solid hsl(var(--border-subtle))",
+                    }}
+                  >
+                    <span className="label-xs">Description</span>
+                    <span className="label-xs">Category</span>
+                    <span className="label-xs text-right">Amount</span>
+                  </div>
+
+                  <div className="overflow-y-auto" style={{ maxHeight: "480px" }}>
+                    {transactions.map((tx, i) => {
+                      const positive = tx.amount >= 0;
+                      return (
+                        <div
+                          key={tx.id}
+                          className="grid items-center px-6 py-3.5 transition-colors"
+                          style={{
+                            gridTemplateColumns: "1fr 140px 100px",
+                            borderBottom: i < transactions.length - 1 ? "1px solid hsl(var(--border-subtle))" : "none",
+                            cursor: "default",
+                          }}
+
+                        >
+                          {/* Description + date */}
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div
+                              className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center"
+                              style={{
+                                background: positive ? "hsl(var(--positive-dim))" : "hsl(var(--negative-dim))",
+                                border:     `1px solid hsl(var(--${positive ? "positive" : "negative"}) / 0.2)`,
+                              }}
+                            >
+                              {positive
+                                ? <ArrowUpRight   className="w-3.5 h-3.5" style={{ color: "hsl(var(--positive))" }} />
+                                : <ArrowDownRight className="w-3.5 h-3.5" style={{ color: "hsl(var(--negative))" }} />
+                              }
+                            </div>
+                            <div className="min-w-0">
+                              <p
+                                className="text-sm font-medium truncate"
+                                style={{ color: "hsl(var(--foreground))" }}
+                              >
+                                {tx.description}
+                              </p>
+                              <p
+                                className="text-xs"
+                                style={{ color: "hsl(var(--foreground-tertiary))", fontFamily: "Geist Mono" }}
+                              >
+                                {new Date(tx.date).toLocaleDateString("en-IN", {
+                                  day: "2-digit", month: "short", year: "numeric",
+                                })}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Category */}
+                          <span className="badge-muted truncate max-w-[120px]">
+                            {tx.category ?? "Unclassified"}
+                          </span>
+
+                          {/* Amount */}
+                          <p
+                            className="text-sm font-bold tabular text-right"
+                            style={{
+                              color:       positive ? "hsl(var(--positive))" : "hsl(var(--negative))",
+                              fontFamily:  "Geist Mono",
+                            }}
+                          >
+                            {positive ? "+" : "−"}₹{Math.abs(tx.amount).toFixed(2)}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* ── INVESTMENT MANAGER ──────────────────────────────────────────── */}
+          <div id="portfolio">
+          <InvestmentManager
+            totalInvestmentsCount={totalInvestmentsCount}
+            sessionUser={{
+              id:    session.user.id,
+              name:  session.user?.name,
+              email: session.user?.email,
+              image: session.user?.image,
+            }}
+          /></div>
+        </main>
+      </div>
     </div>
   );
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "morning";
+  if (h < 17) return "afternoon";
+  return "evening";
 }

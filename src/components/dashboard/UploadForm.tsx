@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useRef, useCallback, DragEvent, ChangeEvent } from "react";
-import { Upload, FileText, X, Loader2, CheckCircle, AlertTriangle, Cpu } from "lucide-react";
+import { Upload, FileText, X, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-type UploadState =
+type State =
   | { status: "idle" }
   | { status: "dragging" }
   | { status: "selected"; file: File }
@@ -12,164 +12,170 @@ type UploadState =
   | { status: "success"; message: string }
   | { status: "error"; message: string };
 
-function formatBytes(bytes: number) {
-  if (bytes < 1024)        return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
+const fmtBytes = (b: number) =>
+  b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(1)} MB`;
 
 export default function UploadForm() {
-  const [state, setState] = useState<UploadState>({ status: "idle" });
-  const inputRef          = useRef<HTMLInputElement>(null);
-  const router            = useRouter();
-
-  function validate(file: File): string | null {
-    if (file.type !== "application/pdf" && !file.name.endsWith(".pdf"))
-      return "Only PDF files are accepted.";
-    if (file.size > 10 * 1024 * 1024)
-      return "File exceeds 10 MB limit.";
-    return null;
-  }
+  const [s, setS] = useState<State>({ status: "idle" });
+  const inputRef  = useRef<HTMLInputElement>(null);
+  const router    = useRouter();
 
   function pick(file: File) {
-    const err = validate(file);
-    if (err) { setState({ status: "error", message: err }); return; }
-    setState({ status: "selected", file });
+    if (file.type !== "application/pdf" && !file.name.endsWith(".pdf"))
+      return setS({ status: "error", message: "Only PDF files are accepted." });
+    if (file.size > 10 * 1024 * 1024)
+      return setS({ status: "error", message: "File exceeds 10 MB limit." });
+    setS({ status: "selected", file });
   }
 
-  const onDragOver  = useCallback((e: DragEvent) => { e.preventDefault(); setState({ status: "dragging" }); }, []);
-  const onDragLeave = useCallback((e: DragEvent) => { e.preventDefault(); setState({ status: "idle" }); }, []);
+  const onDragOver  = useCallback((e: DragEvent) => { e.preventDefault(); setS({ status: "dragging" }); }, []);
+  const onDragLeave = useCallback((e: DragEvent) => { e.preventDefault(); setS({ status: "idle" }); }, []);
   const onDrop      = useCallback((e: DragEvent) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) pick(f); }, []);
   const onInput     = useCallback((e: ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) pick(f); if (inputRef.current) inputRef.current.value = ""; }, []);
 
-  async function handleUpload() {
-    if (state.status !== "selected") return;
-    const file = state.file;
-    setState({ status: "uploading", file });
-
+  async function upload() {
+    if (s.status !== "selected") return;
+    const file = s.file;
+    setS({ status: "uploading", file });
     const fd = new FormData();
     fd.append("file", file);
-
     try {
       const res  = await fetch("/api/transactions/upload", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) {
-        setState({ status: "error", message: data.error || "Processing failed." });
+        setS({ status: "error", message: data.error || "Processing failed." });
       } else {
-        setState({ status: "success", message: data.message || "Upload successful!" });
+        setS({ status: "success", message: data.message || "Upload successful!" });
         router.refresh();
       }
     } catch {
-      setState({ status: "error", message: "Network error — check connection and retry." });
+      setS({ status: "error", message: "Network error — check connection." });
     }
   }
 
-  const idle      = state.status === "idle" || state.status === "dragging";
-  const dragging  = state.status === "dragging";
+  const idle     = s.status === "idle" || s.status === "dragging";
+  const dragging = s.status === "dragging";
 
   return (
-    <div className="space-y-3 font-mono text-xs">
+    <div className="space-y-3">
       {/* Drop zone */}
       {idle && (
         <div
-          onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
           onClick={() => inputRef.current?.click()}
-          role="button" tabIndex={0}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          role="button"
+          tabIndex={0}
           onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
-          className={`border-2 border-dashed cursor-pointer p-6 text-center space-y-3 transition-colors select-none
-            ${dragging ? "border-accent/60 bg-accent/5" : "border-border hover:border-border/60 hover:bg-surface"}`}
+          className="rounded-xl p-6 text-center transition-all cursor-pointer select-none"
+          style={{
+            background:   dragging ? "hsl(var(--info-dim))" : "hsl(var(--surface-raised))",
+            border:       `2px dashed ${dragging ? "hsl(var(--info) / 0.6)" : "hsl(var(--border))"}`,
+          }}
         >
-          <div className="flex justify-center">
-            <div className={`p-3 border transition-colors ${dragging ? "border-accent/40 bg-accent/10" : "border-border bg-muted"}`}>
-              <Upload className={`w-5 h-5 ${dragging ? "text-accent" : "text-muted-foreground"}`} />
-            </div>
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3"
+            style={{
+              background: dragging ? "hsl(var(--info) / 0.15)" : "hsl(var(--surface-overlay))",
+              border:     `1px solid ${dragging ? "hsl(var(--info) / 0.4)" : "hsl(var(--border))"}`,
+            }}
+          >
+            <Upload className="w-4 h-4" style={{ color: dragging ? "hsl(var(--info))" : "hsl(var(--foreground-tertiary))" }} />
           </div>
-          <div>
-            <p className={`text-xs font-bold uppercase tracking-wider ${dragging ? "text-accent" : "text-muted-foreground"}`}>
-              {dragging ? "Release to stage document" : "Drop passbook PDF here"}
-            </p>
-            <p className="text-[10px] text-muted-foreground/60 mt-0.5">or click to browse</p>
-          </div>
-          <input ref={inputRef} type="file" accept=".pdf" onChange={onInput} className="sr-only" aria-hidden />
+          <p className="text-sm font-semibold mb-0.5" style={{ color: dragging ? "hsl(var(--info))" : "hsl(var(--foreground))" }}>
+            {dragging ? "Release to upload" : "Drop PDF here"}
+          </p>
+          <p className="text-xs" style={{ color: "hsl(var(--foreground-tertiary))" }}>
+            or click to browse · Max 10 MB
+          </p>
+          <input ref={inputRef} type="file" accept=".pdf" onChange={onInput} className="sr-only" />
         </div>
       )}
 
-      {/* File selected */}
-      {state.status === "selected" && (
-        <div className="panel p-4 space-y-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="p-2 bg-muted border border-border shrink-0">
-                <FileText className="w-4 h-4 text-accent" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-sans font-medium text-foreground truncate">{state.file.name}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{formatBytes(state.file.size)} · PDF</p>
-              </div>
+      {/* Selected */}
+      {s.status === "selected" && (
+        <div
+          className="rounded-xl p-4 space-y-4"
+          style={{ background: "hsl(var(--surface-raised))", border: "1px solid hsl(var(--border))" }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "hsl(var(--info-dim))", border: "1px solid hsl(var(--info) / 0.3)" }}
+            >
+              <FileText className="w-4 h-4" style={{ color: "hsl(var(--info))" }} />
             </div>
-            <button onClick={() => setState({ status: "idle" })} className="text-muted-foreground hover:text-foreground shrink-0 transition-colors">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>{s.file.name}</p>
+              <p className="text-xs" style={{ color: "hsl(var(--foreground-tertiary))", fontFamily: "Geist Mono" }}>
+                {fmtBytes(s.file.size)} · PDF
+              </p>
+            </div>
+            <button onClick={() => setS({ status: "idle" })} className="btn-icon">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="bg-background border border-input p-3 space-y-1">
-            <p className="data-label mb-1">Pre-flight Checks</p>
-            {["Ensure document is not password-protected", "Supports HDFC, ICICI, SBI, Axis, Kotak formats", "Streamed directly to Groq extraction pipeline"].map((n) => (
-              <p key={n} className="text-[10px] text-muted-foreground flex items-start gap-1.5">
-                <span className="text-accent shrink-0 mt-0.5">›</span>{n}
-              </p>
-            ))}
-          </div>
-          <button onClick={handleUpload} className="btn-primary gap-2">
-            <Cpu className="w-3.5 h-3.5" /> Invoke Groq Parser
+          <button onClick={upload} className="btn-primary w-full justify-center text-sm">
+            Parse with Groq AI
           </button>
         </div>
       )}
 
       {/* Uploading */}
-      {state.status === "uploading" && (
-        <div className="panel p-4 flex items-center gap-3">
-          <Loader2 className="w-4 h-4 text-accent animate-spin shrink-0" />
+      {s.status === "uploading" && (
+        <div
+          className="rounded-xl p-4 flex items-center gap-3"
+          style={{ background: "hsl(var(--info-dim))", border: "1px solid hsl(var(--info) / 0.25)" }}
+        >
+          <Loader2 className="w-5 h-5 animate-spin shrink-0" style={{ color: "hsl(var(--info))" }} />
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-accent font-bold">Groq Extraction Running</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Parsing {state.file.name}…</p>
+            <p className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>Analyzing document…</p>
+            <p className="text-xs" style={{ color: "hsl(var(--foreground-tertiary))" }}>Groq extraction running</p>
           </div>
         </div>
       )}
 
       {/* Success */}
-      {state.status === "success" && (
-        <div className="border border-positive/20 bg-positive/5 p-4 flex items-start gap-3">
-          <CheckCircle className="w-4 h-4 text-positive shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-[10px] uppercase tracking-wider text-positive font-bold">Ingestion Complete</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">{state.message}</p>
+      {s.status === "success" && (
+        <div
+          className="rounded-xl p-4"
+          style={{ background: "hsl(var(--positive-dim))", border: "1px solid hsl(var(--positive) / 0.25)" }}
+        >
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "hsl(var(--positive))" }} />
+            <div className="flex-1">
+              <p className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>Ingestion complete</p>
+              <p className="text-xs mt-0.5" style={{ color: "hsl(var(--foreground-secondary))" }}>{s.message}</p>
+            </div>
+            <button
+              onClick={() => setS({ status: "idle" })}
+              className="text-xs font-semibold hover:underline"
+              style={{ color: "hsl(var(--positive))" }}
+            >
+              Parse another
+            </button>
           </div>
-          <button onClick={() => setState({ status: "idle" })} className="text-[10px] text-accent hover:text-accent/70 uppercase tracking-wide transition-colors">
-            Parse Another
-          </button>
         </div>
       )}
 
       {/* Error */}
-      {state.status === "error" && (
-        <div className="border border-negative/20 bg-negative/5 p-4 space-y-3">
+      {s.status === "error" && (
+        <div
+          className="rounded-xl p-4 space-y-3"
+          style={{ background: "hsl(var(--negative-dim))", border: "1px solid hsl(var(--negative) / 0.25)" }}
+        >
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-4 h-4 text-negative shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "hsl(var(--negative))" }} />
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-negative font-bold">Parse Error</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{state.message}</p>
+              <p className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>Upload failed</p>
+              <p className="text-xs mt-0.5" style={{ color: "hsl(var(--foreground-secondary))" }}>{s.message}</p>
             </div>
           </div>
-          <button onClick={() => setState({ status: "idle" })} className="w-full border border-border text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground py-1.5 transition-colors">
-            Retry Upload
+          <button onClick={() => setS({ status: "idle" })} className="btn-ghost w-full justify-center text-xs">
+            Try again
           </button>
         </div>
-      )}
-
-      {idle && (
-        <p className="text-[10px] text-muted-foreground/50 text-center leading-relaxed">
-          PDF · Max 10 MB · Unencrypted only
-        </p>
       )}
     </div>
   );

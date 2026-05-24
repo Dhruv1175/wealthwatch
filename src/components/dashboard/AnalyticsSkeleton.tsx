@@ -1,30 +1,27 @@
 export default function AnalyticsSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
-      {/* Control row */}
-      <div className="flex justify-between items-center border-b border-border pb-4">
-        <div className="h-3 skeleton w-40 rounded" />
-        <div className="h-8 skeleton w-36 rounded" />
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <div className="skeleton h-3 w-28 rounded" />
+          <div className="skeleton h-6 w-44 rounded" />
+        </div>
+        <div className="skeleton h-9 w-36 rounded-xl" />
       </div>
 
-      {/* Metric cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="panel p-4 h-24 flex flex-col justify-between">
-            <div className="h-2 skeleton w-1/3 rounded" />
-            <div className="h-6 skeleton w-1/2 rounded" />
-          </div>
-        ))}
+      {/* Hero stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="col-span-2 skeleton rounded-2xl h-40" />
+        <div className="skeleton rounded-2xl h-40" />
+        <div className="skeleton rounded-2xl h-40" />
       </div>
 
-      {/* Chart area */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 panel p-5 h-72 skeleton" />
-        <div className="panel p-5 h-72 skeleton" />
+      {/* Charts */}
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-8 skeleton rounded-2xl h-72" />
+        <div className="col-span-12 lg:col-span-4 skeleton rounded-2xl h-72" />
       </div>
-
-      {/* Secondary row */}
-      <div className="panel p-5 h-32 skeleton" />
     </div>
   );
 }

@@ -2,152 +2,428 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── DESIGN TOKEN DEFINITIONS ──────────────────────────────────────────────────
-   All semantic Tailwind tokens resolve to these HSL variables.
-   Editing here updates every component that uses token classes.
-   ─────────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    /* Surfaces */
-    --background:        0 0% 0%;        /* #000000 — absolute black canvas    */
-    --foreground:        0 0% 93%;       /* #EDEDED — primary text             */
+    /* ── Core surfaces ─────────────────────────────────────────────────── */
+    --background:           220 13% 5%;      /* #0B0D11  deep navy-black      */
+    --surface:              220 12% 8%;      /* #111418  card surface          */
+    --surface-raised:       220 11% 11%;     /* #171B21  hover / elevated      */
+    --surface-overlay:      220 10% 14%;     /* #1D222A  modals / dropdowns    */
 
-    --card:              0 0% 5%;        /* #0D0D0D — raised card surface      */
-    --card-foreground:   0 0% 88%;       /* #E0E0E0 — text on cards            */
+    /* ── Foreground text ───────────────────────────────────────────────── */
+    --foreground:           210 20% 94%;     /* #EDF0F5  primary text          */
+    --foreground-secondary: 215 14% 60%;     /* #8B96A8  secondary text        */
+    --foreground-tertiary:  215 10% 38%;     /* #576070  dim / placeholders    */
 
-    --surface:           0 0% 7%;        /* #121212 — component surface        */
-    --surface-raised:    0 0% 10%;       /* #1A1A1A — hover / elevated surface */
+    /* ── Borders ───────────────────────────────────────────────────────── */
+    --border:               220 15% 14%;     /* #1E2430  default border        */
+    --border-subtle:        220 12% 11%;     /* #171C25  hairline separator    */
+    --border-focus:         210 100% 60%;    /* #3399FF  focus ring            */
 
-    --muted:             0 0% 12%;       /* #1F1F1F — muted backgrounds        */
-    --muted-foreground:  0 0% 45%;       /* #737373 — secondary / dim text     */
+    /* ── Semantic tokens for Tailwind ─────────────────────────────────── */
+    --card:                 220 12% 8%;
+    --card-foreground:      210 20% 94%;
+    --muted:                220 11% 11%;
+    --muted-foreground:     215 14% 55%;
+    --border-token:         220 15% 14%;
+    --input:                220 13% 12%;
+    --ring:                 210 100% 60%;
+    --accent:               210 100% 60%;
+    --accent-foreground:    0 0% 100%;
+    --surface-token:        220 12% 8%;
+    --surface-raised-token: 220 11% 11%;
 
-    /* Borders & inputs */
-    --border:            0 0% 100% / 0.08;   /* white/8 — razor hairline border   */
-    --input:             0 0% 100% / 0.06;   /* white/6 — form field border       */
-    --ring:              204 94% 49%;        /* sky-500 — focus ring              */
+    /* ── Functional signals ────────────────────────────────────────────── */
+    --positive:             152 69% 48%;     /* #25C87A  emerald green         */
+    --positive-dim:         152 69% 48% / 0.12;
+    --negative:             4 86% 60%;       /* #F04438  crisp red             */
+    --negative-dim:         4 86% 60% / 0.12;
+    --warning:              36 96% 56%;      /* #F9A825  amber                 */
+    --warning-dim:          36 96% 56% / 0.12;
+    --info:                 210 100% 60%;    /* #3399FF  blue                  */
+    --info-dim:             210 100% 60% / 0.12;
+    --premium:              40 95% 58%;      /* #FBAE28  gold                  */
+    --premium-dim:          40 95% 58% / 0.12;
 
-    /* Accent — interactive highlight (sky blue) */
-    --accent:            204 94% 49%;    /* #0EA5E9 */
-    --accent-foreground: 0 0% 100%;
-
-    /* Functional signals */
-    --positive:          142 71% 45%;    /* #22C55E emerald                    */
-    --negative:          0 84% 60%;      /* #EF4444 red                        */
-    --warning:           38 92% 50%;     /* #F59E0B amber                      */
-    --info:              204 94% 49%;    /* #0EA5E9 sky                        */
-    --premium:           38 92% 50%;     /* #F59E0B amber gold — Pro/billing   */
+    /* ── Sidebar ───────────────────────────────────────────────────────── */
+    --sidebar-width: 240px;
   }
 }
 
-/* ── BASE RESETS ───────────────────────────────────────────────────────────── */
 @layer base {
-  * {
-    @apply border-border;
-    box-sizing: border-box;
-  }
+  *, *::before, *::after { box-sizing: border-box; }
 
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-variant-numeric: tabular-nums;
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: "Geist", sans-serif;
+    overflow-x: hidden;
   }
 
-  /* Monospaced number cells — zero-width space trick keeps columns aligned */
-  .tabular-nums {
-    font-variant-numeric: tabular-nums;
-  }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(220 15% 20%); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(220 15% 28%); }
+  * { scrollbar-width: thin; scrollbar-color: hsl(220 15% 20%) transparent; }
 }
 
-/* ── SCROLLBAR STYLING ─────────────────────────────────────────────────────── */
-@layer utilities {
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(0 0% 18%) transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(0 0% 18%);
-    border-radius: 2px;
+@layer components {
+  /* ── Layout ────────────────────────────────────────────────────────── */
+  /* Sidebar is position:fixed so content just needs a matching left padding */
+  .app-shell {
+    display: block;
+    min-height: 100vh;
   }
 
-  /* Skeleton shimmer utility */
+  .app-content {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    width: calc(100% - var(--sidebar-width));
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Cards / Panels ────────────────────────────────────────────────── */
+  .card {
+    background: hsl(var(--surface));
+    border: 1px solid hsl(var(--border));
+    border-radius: 12px;
+  }
+  .card-sm {
+    background: hsl(var(--surface));
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+  }
+  .card-hover {
+    @apply card transition-all duration-200;
+  }
+  .card-hover:hover {
+    border-color: hsl(var(--border-focus) / 0.3);
+    background: hsl(var(--surface-raised));
+  }
+
+  /* ── Typography ────────────────────────────────────────────────────── */
+  .label-xs {
+    font-size: 10px;
+    font-family: "Geist Mono", monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    font-weight: 500;
+  }
+  .label-sm {
+    font-size: 11px;
+    font-family: "Geist Mono", monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+    font-weight: 500;
+  }
+  .mono-val {
+    font-family: "Geist Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  /* ── Stat blocks ────────────────────────────────────────────────────── */
+  .stat-card {
+    @apply card p-5 space-y-3;
+  }
+  .stat-number {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-family: "Geist", sans-serif;
+  }
+  .stat-number-lg {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-family: "Geist", sans-serif;
+  }
+
+  /* ── Buttons ────────────────────────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    white-space: nowrap;
+    border: none;
+    font-family: "Geist", sans-serif;
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-primary {
+    @apply btn;
+    background: hsl(var(--foreground));
+    color: hsl(var(--background));
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: hsl(210 20% 88%);
+  }
+
+  .btn-ghost {
+    @apply btn;
+    background: transparent;
+    color: hsl(var(--foreground-secondary));
+    border: 1px solid hsl(var(--border));
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: hsl(var(--surface-raised));
+    color: hsl(var(--foreground));
+  }
+
+  .btn-premium {
+    @apply btn;
+    background: hsl(var(--premium));
+    color: hsl(220 13% 5%);
+    font-weight: 700;
+  }
+  .btn-premium:hover:not(:disabled) {
+    background: hsl(40 95% 65%);
+  }
+
+  .btn-danger {
+    @apply btn;
+    background: hsl(var(--negative));
+    color: white;
+    font-weight: 700;
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: hsl(4 86% 52%);
+  }
+
+  .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    background: hsl(var(--surface-raised));
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--foreground-secondary));
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+  .btn-icon:hover {
+    background: hsl(var(--surface-overlay));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border-focus) / 0.4);
+  }
+
+  /* ── Form fields ────────────────────────────────────────────────────── */
+  .field {
+    width: 100%;
+    padding: 9px 12px;
+    background: hsl(var(--input));
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    color: hsl(var(--foreground));
+    font-size: 13px;
+    font-family: "Geist", sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field:focus { border-color: hsl(var(--border-focus) / 0.6); }
+  .field::placeholder { color: hsl(var(--foreground-tertiary)); }
+
+  .field-mono {
+    @apply field;
+    font-family: "Geist Mono", monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Badges ─────────────────────────────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: "Geist Mono", monospace;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .badge-positive { @apply badge; background: hsl(var(--positive-dim)); color: hsl(var(--positive)); }
+  .badge-negative { @apply badge; background: hsl(var(--negative-dim)); color: hsl(var(--negative)); }
+  .badge-warning  { @apply badge; background: hsl(var(--warning-dim));  color: hsl(var(--warning));  }
+  .badge-info     { @apply badge; background: hsl(var(--info-dim));     color: hsl(var(--info));     }
+  .badge-premium  { @apply badge; background: hsl(var(--premium-dim));  color: hsl(var(--premium));  }
+  .badge-muted    { @apply badge; background: hsl(var(--muted));        color: hsl(var(--muted-foreground)); }
+
+  /* ── Progress bars ──────────────────────────────────────────────────── */
+  .progress-track {
+    height: 4px;
+    width: 100%;
+    background: hsl(var(--muted));
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ── Sidebar nav items ──────────────────────────────────────────────── */
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: hsl(var(--foreground-secondary));
+    transition: all 0.15s ease;
+    cursor: pointer;
+    text-decoration: none;
+    width: 100%;
+  }
+  .nav-item:hover {
+    background: hsl(var(--surface-raised));
+    color: hsl(var(--foreground));
+  }
+  .nav-item.active {
+    background: hsl(var(--surface-overlay));
+    color: hsl(var(--foreground));
+  }
+  .nav-item.active .nav-icon { color: hsl(var(--info)); }
+
+  /* ── Dividers ───────────────────────────────────────────────────────── */
+  .divider { border-top: 1px solid hsl(var(--border)); }
+  .divider-v { border-left: 1px solid hsl(var(--border)); }
+
+  /* ── Skeleton shimmer ───────────────────────────────────────────────── */
   .skeleton {
     background: linear-gradient(
       90deg,
-      hsl(0 0% 10%) 25%,
-      hsl(0 0% 14%) 50%,
-      hsl(0 0% 10%) 75%
+      hsl(var(--surface)) 0%,
+      hsl(var(--surface-raised)) 50%,
+      hsl(var(--surface)) 100%
     );
     background-size: 200% 100%;
-    @apply animate-shimmer;
+    animation: shimmer 1.8s ease infinite;
+    border-radius: 6px;
   }
+
+  /* ── Positive / negative text helpers ──────────────────────────────── */
+  .text-positive { color: hsl(var(--positive)); }
+  .text-negative { color: hsl(var(--negative)); }
+  .text-warning  { color: hsl(var(--warning)); }
+  .text-info     { color: hsl(var(--info)); }
+  .text-premium  { color: hsl(var(--premium)); }
+  .text-secondary { color: hsl(var(--foreground-secondary)); }
+  .text-tertiary  { color: hsl(var(--foreground-tertiary)); }
 }
 
-/* ── CUSTOM COMPONENT LAYER ────────────────────────────────────────────────── */
-@layer components {
-  /* Panel — shared card container */
-  .panel {
-    @apply bg-card border border-border;
+@layer utilities {
+  /* Glow effects */
+  .glow-green  { box-shadow: 0 0 20px hsl(152 69% 48% / 0.15); }
+  .glow-red    { box-shadow: 0 0 20px hsl(4 86% 60% / 0.15); }
+  .glow-blue   { box-shadow: 0 0 20px hsl(210 100% 60% / 0.15); }
+  .glow-gold   { box-shadow: 0 0 24px hsl(40 95% 58% / 0.2); }
+
+  /* Gradient text */
+  .gradient-text-gold {
+    background: linear-gradient(135deg, hsl(40 95% 70%), hsl(36 96% 56%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-text-green {
+    background: linear-gradient(135deg, hsl(152 69% 65%), hsl(152 69% 48%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  /* Data label — tiny all-caps monospace label above a number */
-  .data-label {
-    @apply text-[9px] font-mono uppercase tracking-[0.12em] text-muted-foreground;
+  /* Number cells */
+  .tabular { font-variant-numeric: tabular-nums; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up    { animation: fadeUp      0.4s cubic-bezier(0.4,0,0.2,1) forwards; }
+.animate-fade-in    { animation: fadeIn      0.3s ease forwards; }
+.animate-scale-in   { animation: scaleIn     0.2s ease forwards; }
+.animate-slide-right { animation: slideInRight 0.3s ease forwards; }
+.animate-live-pulse { animation: livePulse   2.5s ease infinite; }
+.animate-count-up   { animation: countUp     0.5s ease forwards; }
+
+/* ── Server-component hover helpers (no JS event handlers needed) ─────────── */
+@layer utilities {
+  /* MacroNewsPanel news items */
+  .news-item-hover:hover {
+    background: hsl(var(--surface-overlay)) !important;
+    border-color: hsl(var(--border-focus) / 0.3) !important;
   }
 
-  /* Data value — large monospace financial figure */
-  .data-value {
-    @apply text-xl font-black font-mono tracking-tight tabular-nums;
+  /* Billing feature matrix rows */
+  .billing-row-hover:hover {
+    background: hsl(var(--surface-raised));
   }
 
-  /* Ticker chip — inline symbol badge */
-  .ticker-chip {
-    @apply text-[9px] font-mono font-bold uppercase border border-border
-           bg-surface text-muted-foreground px-1.5 py-0.5 tracking-wider;
+  /* Generic card hover used across server components */
+  .server-card-hover:hover {
+    background: hsl(var(--surface-overlay));
+    border-color: hsl(var(--border-focus) / 0.25);
   }
 
-  /* Status badge */
-  .badge-basic {
-    @apply text-[9px] font-mono uppercase tracking-widest border border-border
-           bg-muted text-muted-foreground px-2 py-0.5;
-  }
-  .badge-pro {
-    @apply text-[9px] font-mono uppercase tracking-widest border border-premium/40
-           bg-premium/10 text-premium px-2 py-0.5;
+  /* Transaction feed row hover */
+  .tx-row-hover:hover {
+    background: hsl(var(--surface-raised)) !important;
   }
 
-  /* Input field — unified dark form input */
-  .field {
-    @apply w-full bg-background border border-input px-3 py-2 text-xs font-mono
-           text-foreground placeholder:text-muted-foreground
-           focus:outline-none focus:border-ring/60 transition-colors;
-  }
-
-  /* Primary action button */
-  .btn-primary {
-    @apply w-full flex items-center justify-center gap-2
-           bg-foreground text-background font-black text-xs uppercase tracking-widest
-           py-2.5 px-4 transition-colors hover:bg-foreground/90
-           disabled:opacity-40 disabled:cursor-not-allowed;
-  }
-
-  /* Ghost button */
-  .btn-ghost {
-    @apply flex items-center gap-2 text-xs font-mono text-muted-foreground
-           hover:text-foreground transition-colors;
-  }
-
-  /* Divider */
-  .divider {
-    @apply border-t border-border;
-  }
+  /* text-premium Tailwind utility (resolves the CSS var) */
+  .text-premium { color: hsl(var(--premium)); }
+  .text-secondary { color: hsl(var(--foreground-secondary)); }
+  .hover\:opacity-80:hover { opacity: 0.8; }
 }

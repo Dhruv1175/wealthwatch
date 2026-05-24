@@ -5,6 +5,7 @@ import SummaryPanelClient from "./SummaryPanelClient";
 import StreamingAdviceCard from "./StreamingAdviceCard";
 import { Suspense } from "react";
 import RazorpayUpgradeButton from "./RazorpayUpgradeButton";
+import { Lock } from "lucide-react";
 
 interface SummarySectionProps {
   searchParams: { timeframe?: string };
@@ -14,8 +15,11 @@ export default async function SummarySection({ searchParams }: SummarySectionPro
   const session = await auth();
   if (!session?.user?.id) {
     return (
-      <div className="text-xs font-mono text-negative border border-negative/20 bg-negative/5 px-4 py-3">
-        Identity validation expired. Please sign in again.
+      <div
+        className="rounded-2xl px-5 py-3 text-sm"
+        style={{ background: "hsl(var(--negative-dim))", border: "1px solid hsl(var(--negative) / 0.25)", color: "hsl(var(--negative))", fontFamily: "Geist Mono" }}
+      >
+        Session expired — please sign in again.
       </div>
     );
   }
@@ -29,34 +33,47 @@ export default async function SummarySection({ searchParams }: SummarySectionPro
 
   const isPro =
     userMetadata?.tier === "PRO" &&
-    (userMetadata.subscriptionEnd
-      ? userMetadata.subscriptionEnd > new Date()
-      : false);
+    (userMetadata.subscriptionEnd ? userMetadata.subscriptionEnd > new Date() : true);
 
-  /* Year-view gate */
+  /* ── Year-view gate ──────────────────────────────────────────────────── */
   if (timeframe === "year" && !isPro) {
     return (
-      <div className="panel p-8 space-y-4 text-center border-premium/25">
-        <div className="w-10 h-10 border border-premium/30 bg-premium/10 flex items-center justify-center mx-auto">
-          <span className="text-premium text-lg">★</span>
+      <div
+        className="rounded-2xl p-8 text-center space-y-5 relative overflow-hidden"
+        style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--premium) / 0.25)" }}
+      >
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse 50% 60% at 50% 0%, hsl(var(--premium) / 0.06), transparent)" }}
+        />
+        <div
+          className="relative w-14 h-14 rounded-2xl flex items-center justify-center mx-auto"
+          style={{ background: "hsl(var(--premium-dim))", border: "1px solid hsl(var(--premium) / 0.3)" }}
+        >
+          <Lock className="w-6 h-6" style={{ color: "hsl(var(--premium))" }} />
         </div>
-        <div>
-          <p className="data-label text-premium mb-1">Pro Feature</p>
-          <h3 className="text-lg font-black tracking-tight text-foreground">Annual Lookback Locked</h3>
-          <p className="text-sm text-muted-foreground font-mono mt-2 max-w-md mx-auto leading-relaxed">
-            The macro annual trend visualizer is restricted to Pro subscribers. Upgrade to unlock long-term compounding forecasts.
+        <div className="relative">
+          <span className="badge-premium mb-3 inline-flex">Pro Feature</span>
+          <h3 className="text-xl font-black tracking-tight mb-2" style={{ color: "hsl(var(--foreground))" }}>
+            Annual Lookback Locked
+          </h3>
+          <p className="text-sm leading-relaxed max-w-md mx-auto" style={{ color: "hsl(var(--foreground-secondary))" }}>
+            The macro annual trend visualizer requires a Pro subscription. Upgrade to unlock
+            long-term compounding forecasts and 12-month analytics.
           </p>
         </div>
-        <RazorpayUpgradeButton
-          sessionUser={{
-            id:    session.user.id,
-            name:  userMetadata?.name,
-            email: userMetadata?.email,
-            image: userMetadata?.image,
-          }}
-          buttonText="Upgrade to Pro Tier (₹1,299)"
-          className="inline-flex items-center gap-2 bg-premium hover:bg-premium/90 text-background font-black text-xs uppercase tracking-widest px-6 py-3 transition-colors"
-        />
+        <div className="relative">
+          <RazorpayUpgradeButton
+            sessionUser={{
+              id:    session.user.id,
+              name:  userMetadata?.name,
+              email: userMetadata?.email,
+              image: userMetadata?.image,
+            }}
+            buttonText="Upgrade to Pro Tier (₹1,299)"
+            className="btn-premium text-sm px-8 py-3 inline-flex"
+          />
+        </div>
       </div>
     );
   }
@@ -65,8 +82,16 @@ export default async function SummarySection({ searchParams }: SummarySectionPro
 
   if (!report) {
     return (
-      <div className="py-20 text-center border border-dashed border-border text-muted-foreground text-xs font-mono">
-        No records captured for this period. Try parsing a statement file.
+      <div
+        className="flex flex-col items-center justify-center py-20 rounded-2xl gap-3"
+        style={{ background: "hsl(var(--surface))", border: "2px dashed hsl(var(--border))" }}
+      >
+        <p className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+          No records for this period
+        </p>
+        <p className="text-xs" style={{ color: "hsl(var(--foreground-tertiary))" }}>
+          Upload a bank statement to populate your dashboard
+        </p>
       </div>
     );
   }
@@ -75,9 +100,9 @@ export default async function SummarySection({ searchParams }: SummarySectionPro
     <SummaryPanelClient initialReport={report} defaultTimeframe={timeframe}>
       <Suspense
         fallback={
-          <div className="space-y-3 py-4">
-            {[100, 80, 60].map((w) => (
-              <div key={w} className={`h-2 skeleton rounded`} style={{ width: `${w}%` }} />
+          <div className="space-y-3 py-2">
+            {[100, 85, 70, 55].map((w) => (
+              <div key={w} className="skeleton h-3 rounded" style={{ width: `${w}%` }} />
             ))}
           </div>
         }
@@ -85,14 +110,20 @@ export default async function SummarySection({ searchParams }: SummarySectionPro
         {isPro ? (
           <StreamingAdviceCard report={report} userId={session.user.id} />
         ) : (
-          <div className="flex items-center justify-between py-2">
-            <p className="text-[11px] font-mono text-muted-foreground">
+          <div className="flex items-center justify-between py-1 gap-4">
+            <p className="text-sm" style={{ color: "hsl(var(--foreground-tertiary))" }}>
               Upgrade to Pro to unlock AI financial advisor insights.
             </p>
             <RazorpayUpgradeButton
-              sessionUser={{ id: session.user.id, name: userMetadata?.name, email: userMetadata?.email, image: userMetadata?.image }}
+              sessionUser={{
+                id:    session.user.id,
+                name:  userMetadata?.name,
+                email: userMetadata?.email,
+                image: userMetadata?.image,
+              }}
               buttonText="Unlock Pro"
-              className="flex items-center gap-1.5 text-[11px] font-mono text-premium hover:text-premium/80 transition-colors"
+              className="text-sm font-semibold whitespace-nowrap transition-colors"
+              style={{ color: "hsl(var(--premium))" } as React.CSSProperties}
             />
           </div>
         )}

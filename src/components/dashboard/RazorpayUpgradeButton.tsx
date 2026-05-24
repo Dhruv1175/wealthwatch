@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CreditCard, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useNotifications } from "./NotificationContext";
 import Script from "next/script";
 
@@ -14,39 +14,41 @@ interface RazorpayUpgradeButtonProps {
   };
   className?: string;
   buttonText?: string;
+  style?: React.CSSProperties;
 }
 
 export default function RazorpayUpgradeButton({
   sessionUser,
   className = "",
   buttonText = "Upgrade to Pro Tier",
+  style,
 }: RazorpayUpgradeButtonProps) {
-  const { triggerToast } = useNotifications();
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
-  const [isProcessing, setIsProcessing]     = useState(false);
+  const { triggerToast }                  = useNotifications();
+  const [scriptLoaded, setScriptLoaded]   = useState(false);
+  const [isProcessing, setIsProcessing]   = useState(false);
 
   useEffect(() => {
-    if ((window as any).Razorpay) setIsScriptLoaded(true);
+    if ((window as any).Razorpay) setScriptLoaded(true);
   }, []);
 
-  function handleInitializeCheckout() {
-    if (!(window as any).Razorpay && !isScriptLoaded) {
-      triggerToast("Gateway Connection Failure", "Razorpay checkout SDK is currently unreachable. Please refresh.", "WARNING");
+  function handleCheckout() {
+    if (!(window as any).Razorpay && !scriptLoaded) {
+      triggerToast("Gateway Unavailable", "Razorpay SDK failed to load — please refresh.", "WARNING");
       return;
     }
     setIsProcessing(true);
 
-    const options = {
+    const rzp = new (window as any).Razorpay({
       key:         process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? "",
       amount:      129900,
       currency:    "INR",
-      name:        "WealthWatch Premium",
+      name:        "WealthWatch",
       description: "Annual Pro Tier Subscription",
       image:       sessionUser.image ?? "",
-      handler:     async function (response: any) {
+      handler: async (response: any) => {
         try {
-          triggerToast("Authorization Captured", "Verifying payment signature…", "SUCCESS");
-          const verifyRes = await fetch("/api/payments/verify", {
+          triggerToast("Payment Captured", "Verifying signature…", "SUCCESS");
+          const res = await fetch("/api/payments/verify", {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
             body:    JSON.stringify({
@@ -55,15 +57,14 @@ export default function RazorpayUpgradeButton({
               razorpaySignature:  response.razorpay_signature,
             }),
           });
-          if (verifyRes.ok) {
-            triggerToast("Upgrade Complete", "Your workspace has been promoted to PRO.", "SUCCESS");
+          if (res.ok) {
+            triggerToast("Upgrade Complete", "Your account is now Pro tier.", "SUCCESS");
             window.location.reload();
           } else {
-            triggerToast("Verification Failed", "The server could not authorize the signature.", "WARNING");
+            triggerToast("Verification Failed", "Could not verify payment. Contact support.", "WARNING");
           }
-        } catch (err) {
-          console.error(err);
-          triggerToast("Network Error", "Failed to reach verification endpoints.", "WARNING");
+        } catch {
+          triggerToast("Network Error", "Failed to reach verification endpoint.", "WARNING");
         } finally {
           setIsProcessing(false);
         }
@@ -71,10 +72,8 @@ export default function RazorpayUpgradeButton({
       modal:   { ondismiss: () => setIsProcessing(false) },
       prefill: { name: sessionUser.name ?? "", email: sessionUser.email ?? "" },
       notes:   { userId: sessionUser.id },
-      theme:   { color: "#f59e0b" },
-    };
-
-    const rzp = new (window as any).Razorpay(options);
+      theme:   { color: "hsl(40, 95%, 58%)" },
+    });
     rzp.open();
   }
 
@@ -83,21 +82,23 @@ export default function RazorpayUpgradeButton({
       <Script
         src="https://checkout.razorpay.com/v1/checkout.js"
         strategy="afterInteractive"
-        onLoad={() => setIsScriptLoaded(true)}
-        onError={() => console.error("Razorpay script load error.")}
+        onLoad={() => setScriptLoaded(true)}
       />
       <button
         type="button"
         disabled={isProcessing}
-        onClick={handleInitializeCheckout}
-        className={`flex items-center gap-2 transition-colors font-mono disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
+        onClick={handleCheckout}
+        className={className}
+        style={style}
       >
         {isProcessing ? (
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-accent shrink-0" />
+          <>
+            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+            Opening Gateway…
+          </>
         ) : (
-          <CreditCard className="w-3.5 h-3.5 text-premium shrink-0" />
+          buttonText
         )}
-        <span>{isProcessing ? "Opening Gateway…" : buttonText}</span>
       </button>
     </>
   );
