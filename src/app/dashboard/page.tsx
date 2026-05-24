@@ -77,6 +77,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
               name:  session.user.name,
               email: session.user.email,
               image: session.user.image,
+              tier:  user?.tier,
             }}
             stats={aggregateStats}
             signOutAction={handleGlobalSignOut}

@@ -16,6 +16,7 @@ interface UserProfileDropdownProps {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    tier?: "BASIC" | "PRO";
   };
   stats: { totalTransactions: number; totalInvestments: number };
   signOutAction: () => Promise<void>;
@@ -96,6 +97,13 @@ export default function UserProfileDropdown({
     } finally {
       setSaving(false);
     }
+  }
+
+  const isPro = ()=>{
+    if(sessionUser.tier === "PRO"){
+      return true;
+    }
+    return false;
   }
 
   const initials   = (currentName || sessionUser.name || "WW").slice(0, 2).toUpperCase();
@@ -180,7 +188,8 @@ export default function UserProfileDropdown({
               </p>
             </div>
             {/* Tier pill */}
-            <span className="badge-muted shrink-0">Basic</span>
+            {isPro()?<span className="badge-premium shrink-0">Pro</span>:<span className="badge-muted shrink-0">Basic</span>}
+
           </div>
 
           {/* Usage meters */}
@@ -241,13 +250,17 @@ export default function UserProfileDropdown({
           </div>
 
           {/* Upgrade CTA */}
+          {isPro() ? <div className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
+            <button>Pro</button>
+          </div> :
           <div className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
             <RazorpayUpgradeButton
               sessionUser={{ id: sessionUser.id, name: currentName, email: sessionUser.email, image: currentImage }}
               buttonText="Upgrade to Pro (₹1,299)"
               className="btn-premium w-full justify-center text-xs"
             />
-          </div>
+          </div>}
+          
 
           {/* Sign out */}
           <div className="p-2">
