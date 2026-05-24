@@ -37,6 +37,7 @@ const isPasswordCorrect = await bcrypt.compare(
             id: user.id,
             email: user.email,
             name: user.name,
+            image: user.image,
         };
       },
     }),
@@ -46,15 +47,24 @@ const isPasswordCorrect = await bcrypt.compare(
         maxAge: 2 * 24 * 60 * 60, // 2 days
     },
     callbacks:{
-        async jwt({ token, user }) {
+        async jwt({ token, user , trigger , session }) {
             if (user) {
                 token.id = user.id;
+                token.email = user.email;
+                token.name = user.name;
+                token.image = user.image;
+            }
+            if (trigger === "update" && session) {
+                return { ...token, ...session };
             }
             return token;
         },
         async session({session,token}){
             if(token){
                 session.user.id = token.id as string;
+                session.user.email = token.email as string;
+                session.user.name = token.name as string;
+                session.user.image = token.image as string;
             }
             return session;
         }
