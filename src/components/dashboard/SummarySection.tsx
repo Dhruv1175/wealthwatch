@@ -2,7 +2,7 @@ import { generateAdvancedSummary, Timeframe } from "@/lib/ai/financial-analyzer"
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
 import SummaryPanelClient from "./SummaryPanelClient";
-import StreamingAdviceCard from "./StreamingAdviceCard";
+import FinancialAdvicePanel from "./FinancialAdvicePanel";
 import { Suspense } from "react";
 import RazorpayUpgradeButton from "./RazorpayUpgradeButton";
 import { Lock } from "lucide-react";
@@ -194,7 +194,7 @@ export default async function SummarySection({ searchParams }: SummarySectionPro
         }
       >
         {isPro ? (
-          <StreamingAdviceCard report={report} userId={session.user.id} />
+          <FinancialAdvicePanel report={report} userId={session.user.id} />
         ) : (
           <div className="flex items-center justify-between py-1 gap-4">
             <p className="text-sm" style={{ color: "hsl(var(--foreground-tertiary))" }}>
