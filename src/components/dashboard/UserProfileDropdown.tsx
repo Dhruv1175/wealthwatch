@@ -5,20 +5,23 @@ import Link from "next/link";
 import {
   ChevronDown, User, CreditCard, LogOut,
   ShieldCheck, ShieldOff, Check, Edit3, Upload, X,
-  TrendingUp, Receipt,
+  TrendingUp, Receipt, Zap, Infinity,
 } from "lucide-react";
 import { useNotifications } from "@/components/dashboard/NotificationContext";
 import RazorpayUpgradeButton from "@/components/dashboard/RazorpayUpgradeButton";
 
 interface UserProfileDropdownProps {
   sessionUser: {
-    id: string;
-    name?: string | null;
+    id:     string;
+    name?:  string | null;
     email?: string | null;
     image?: string | null;
-    tier?: "BASIC" | "PRO";
+    tier?:  "BASIC" | "PRO";
   };
-  stats: { totalTransactions: number; totalInvestments: number };
+  stats: {
+    totalTransactions: number;
+    totalInvestments:  number;
+  };
   signOutAction: () => Promise<void>;
 }
 
@@ -29,26 +32,35 @@ export default function UserProfileDropdown({
   sessionUser, stats, signOutAction,
 }: UserProfileDropdownProps) {
   const { triggerToast } = useNotifications();
-  const [open, setOpen]             = useState(false);
-  const [showEdit, setShowEdit]     = useState(false);
-  const [currentName, setName]      = useState(sessionUser.name ?? "");
-  const [currentImage, setImage]    = useState(sessionUser.image ?? "");
-  const [isSaving, setSaving]       = useState(false);
+  const [open, setOpen]         = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [currentName, setName]  = useState(sessionUser.name ?? "");
+  const [currentImage, setImage]= useState(sessionUser.image ?? "");
+  const [isSaving, setSaving]   = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  // Derived constant — no need for a function
+  const isPro = sessionUser.tier === "PRO";
+
+  const initials  = (currentName || sessionUser.name || "WW").slice(0, 2).toUpperCase();
+  const investPct = Math.min((stats.totalInvestments  / BASIC_INVEST_LIMIT) * 100, 100);
+  const txPct     = Math.min((stats.totalTransactions / BASIC_TX_LIMIT)     * 100, 100);
+
+  // ── Outside-click handler ─────────────────────────────────────────────────
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    function handler(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
+    }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // ── Lazy-load Cloudinary widget script ───────────────────────────────────
   useEffect(() => {
     if (showEdit && !(window as any).cloudinary) {
-      const s = document.createElement("script");
-      s.src = "https://upload-widget.cloudinary.com/global/all.js";
-      s.async = true;
+      const s   = document.createElement("script");
+      s.src     = "https://upload-widget.cloudinary.com/global/all.js";
+      s.async   = true;
       document.body.appendChild(s);
     }
   }, [showEdit]);
@@ -62,9 +74,9 @@ export default function UserProfileDropdown({
       {
         cloudName:    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "",
         uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "",
-        sources: ["local", "url", "camera"],
+        sources:  ["local", "url", "camera"],
         multiple: false,
-        theme: "minimal",
+        theme:    "minimal",
       },
       (_: any, result: any) => {
         if (!_ && result?.event === "success") {
@@ -81,9 +93,9 @@ export default function UserProfileDropdown({
     setSaving(true);
     try {
       const res = await fetch("/api/user/profile", {
-        method: "PATCH",
+        method:  "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: currentName.trim(), image: currentImage }),
+        body:    JSON.stringify({ name: currentName.trim(), image: currentImage }),
       });
       if (res.ok) {
         triggerToast("Profile Updated", "Changes committed.", "SUCCESS");
@@ -99,143 +111,245 @@ export default function UserProfileDropdown({
     }
   }
 
-  const isPro = ()=>{
-    if(sessionUser.tier === "PRO"){
-      return true;
-    }
-    return false;
-  }
-
-  const initials   = (currentName || sessionUser.name || "WW").slice(0, 2).toUpperCase();
-  const investPct  = Math.min((stats.totalInvestments  / BASIC_INVEST_LIMIT) * 100, 100);
-  const txPct      = Math.min((stats.totalTransactions / BASIC_TX_LIMIT)     * 100, 100);
-
   return (
     <div ref={ref} className="relative">
-      {/* ── TRIGGER ──────────────────────────────────────────────────────── */}
+
+      {/* ── TRIGGER BUTTON ─────────────────────────────────────────────── */}
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-all"
         style={{
-          background:   "hsl(var(--surface-raised))",
-          border:       "1px solid hsl(var(--border))",
-          color:        "hsl(var(--foreground))",
+          background: "hsl(var(--surface-raised))",
+          border:     `1px solid ${isPro ? "hsl(var(--premium) / 0.35)" : "hsl(var(--border-token))"}`,
+          color:      "hsl(var(--foreground))",
         }}
-        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "hsl(var(--border-focus) / 0.4)"; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "hsl(var(--border))"; }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLElement).style.borderColor =
+            isPro ? "hsl(var(--premium) / 0.6)" : "hsl(var(--border-focus) / 0.4)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLElement).style.borderColor =
+            isPro ? "hsl(var(--premium) / 0.35)" : "hsl(var(--border-token))";
+        }}
       >
+        {/* Avatar */}
         <div className="relative w-7 h-7 shrink-0">
           {currentImage ? (
-            <img src={currentImage} alt={currentName} className="w-7 h-7 rounded-full object-cover" referrerPolicy="no-referrer" />
+            <img
+              src={currentImage}
+              alt={currentName}
+              className="w-7 h-7 rounded-full object-cover"
+              referrerPolicy="no-referrer"
+            />
           ) : (
             <div
               className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-              style={{ background: "hsl(var(--info-dim))", color: "hsl(var(--info))" }}
+              style={{
+                background: isPro ? "hsl(var(--premium-dim))" : "hsl(var(--info-dim))",
+                color:      isPro ? "hsl(var(--premium))"     : "hsl(var(--info))",
+              }}
             >
               {initials}
             </div>
           )}
+          {/* Online dot */}
           <span
             className="absolute bottom-0 right-0 w-2 h-2 rounded-full border-2"
-            style={{ background: "hsl(var(--positive))", borderColor: "hsl(var(--background))" }}
+            style={{
+              background:  "hsl(var(--positive))",
+              borderColor: "hsl(var(--background))",
+            }}
           />
         </div>
+
         <span className="hidden sm:block text-sm font-medium max-w-[110px] truncate">
           {currentName || sessionUser.name || "User"}
         </span>
+
+        {/* Inline Pro crown on trigger */}
+        {isPro && (
+          <Zap
+            className="w-3.5 h-3.5 shrink-0"
+            style={{ color: "hsl(var(--premium))" }}
+          />
+        )}
+
         <ChevronDown
           className="w-3.5 h-3.5 shrink-0 transition-transform"
           style={{
-            color: "hsl(var(--foreground-tertiary))",
+            color:     "hsl(var(--foreground-tertiary))",
             transform: open ? "rotate(180deg)" : "rotate(0)",
           }}
         />
       </button>
 
-      {/* ── DROPDOWN ─────────────────────────────────────────────────────── */}
+      {/* ── DROPDOWN PANEL ─────────────────────────────────────────────── */}
       {open && (
         <div
-          className="absolute right-0 top-full mt-2 w-72 rounded-xl z-50 animate-fade-up overflow-hidden"
+          className="absolute right-0 top-full mt-2 w-76 rounded-xl z-50 overflow-hidden animate-fade-up"
           style={{
-            background:   "hsl(var(--surface-overlay))",
-            border:       "1px solid hsl(var(--border))",
-            boxShadow:    "0 20px 60px hsl(220 14% 3% / 0.6)",
+            width:      "300px",
+            background: "hsl(var(--surface-overlay))",
+            border:     `1px solid ${isPro ? "hsl(var(--premium) / 0.3)" : "hsl(var(--border-token))"}`,
+            boxShadow:  "0 20px 60px hsl(220 14% 3% / 0.65)",
           }}
         >
-          {/* Identity */}
+          {/* Pro accent stripe */}
+          {isPro && (
+            <div
+              style={{
+                height:     "2px",
+                background: "linear-gradient(90deg, transparent, hsl(var(--premium)), transparent)",
+              }}
+            />
+          )}
+
+          {/* ── IDENTITY HEADER ──────────────────────────────────────── */}
           <div
             className="flex items-center gap-3 px-4 py-4"
-            style={{ borderBottom: "1px solid hsl(var(--border))" }}
+            style={{ borderBottom: "1px solid hsl(var(--border-token))" }}
           >
             <div className="relative shrink-0">
               {currentImage ? (
-                <img src={currentImage} alt={currentName} className="w-10 h-10 rounded-xl object-cover" referrerPolicy="no-referrer" />
+                <img
+                  src={currentImage}
+                  alt={currentName}
+                  className="w-10 h-10 rounded-xl object-cover"
+                  referrerPolicy="no-referrer"
+                />
               ) : (
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold"
-                  style={{ background: "hsl(var(--info-dim))", color: "hsl(var(--info))" }}
+                  style={{
+                    background: isPro ? "hsl(var(--premium-dim))" : "hsl(var(--info-dim))",
+                    color:      isPro ? "hsl(var(--premium))"     : "hsl(var(--info))",
+                  }}
                 >
                   {initials}
                 </div>
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>
+              <p
+                className="text-sm font-semibold truncate"
+                style={{ color: "hsl(var(--foreground))" }}
+              >
                 {currentName || sessionUser.name}
               </p>
-              <p className="text-xs truncate mt-0.5" style={{ color: "hsl(var(--foreground-tertiary))", fontFamily: "Geist Mono" }}>
+              <p
+                className="text-xs truncate mt-0.5"
+                style={{
+                  color:      "hsl(var(--foreground-tertiary))",
+                  fontFamily: "Geist Mono",
+                }}
+              >
                 {sessionUser.email}
               </p>
             </div>
-            {/* Tier pill */}
-            {isPro()?<span className="badge-premium shrink-0">Pro</span>:<span className="badge-muted shrink-0">Basic</span>}
-
+            {/* Tier badge */}
+            {isPro ? (
+              <span className="badge-premium shrink-0 flex items-center gap-1">
+                <Zap className="w-2.5 h-2.5" /> Pro
+              </span>
+            ) : (
+              <span className="badge-muted shrink-0">Basic</span>
+            )}
           </div>
 
-          {/* Usage meters */}
-          <div className="px-4 py-3.5" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
-            <p className="label-xs mb-3">Usage</p>
-            <div className="space-y-3">
-              {[
-                { label: "Investments", used: stats.totalInvestments, max: BASIC_INVEST_LIMIT, pct: investPct, icon: TrendingUp },
-                { label: "Transactions", used: stats.totalTransactions, max: BASIC_TX_LIMIT, pct: txPct, icon: Receipt },
-              ].map(({ label, used, max, pct, icon: Icon }) => (
-                <div key={label} className="space-y-1.5">
-                  <div className="flex items-center justify-between">
+          {/* ── USAGE SECTION ────────────────────────────────────────── */}
+          <div
+            className="px-4 py-3.5"
+            style={{ borderBottom: "1px solid hsl(var(--border-token))" }}
+          >
+            {isPro ? (
+              /* Pro — show actual counts with ∞ label, gold progress fill */
+              <div className="space-y-1">
+                <p className="label-xs mb-3" style={{ color: "hsl(var(--premium) / 0.7)" }}>
+                  Pro Access — Unlimited
+                </p>
+                {[
+                  { label: "Investments tracked", used: stats.totalInvestments,  icon: TrendingUp },
+                  { label: "Transaction records", used: stats.totalTransactions, icon: Receipt    },
+                ].map(({ label, used, icon: Icon }) => (
+                  <div key={label} className="flex items-center justify-between py-1">
                     <div className="flex items-center gap-1.5">
-                      <Icon className="w-3 h-3" style={{ color: "hsl(var(--foreground-tertiary))" }} />
-                      <span className="text-xs" style={{ color: "hsl(var(--foreground-secondary))" }}>{label}</span>
+                      <Icon className="w-3 h-3" style={{ color: "hsl(var(--premium) / 0.6)" }} />
+                      <span className="text-xs" style={{ color: "hsl(var(--foreground-secondary))" }}>
+                        {label}
+                      </span>
                     </div>
-                    <span
-                      className="text-xs font-bold tabular"
-                      style={{
-                        color: pct >= 100 ? "hsl(var(--negative))" : pct >= 80 ? "hsl(var(--warning))" : "hsl(var(--foreground-secondary))",
-                        fontFamily: "Geist Mono",
-                      }}
-                    >
-                      {used}/{max}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className="text-xs font-bold tabular"
+                        style={{ color: "hsl(var(--foreground))", fontFamily: "Geist Mono" }}
+                      >
+                        {used.toLocaleString("en-IN")}
+                      </span>
+                      <span
+                        className="text-[9px] font-bold px-1 py-0.5 rounded"
+                        style={{
+                          background: "hsl(var(--premium-dim))",
+                          color:      "hsl(var(--premium))",
+                          fontFamily: "Geist Mono",
+                        }}
+                      >
+                        ∞
+                      </span>
+                    </div>
                   </div>
-                  <div className="progress-track">
-                    <div
-                      className="progress-fill"
-                      style={{
-                        width: `${pct}%`,
-                        background: pct >= 100
-                          ? "hsl(var(--negative))"
-                          : pct >= 80
-                          ? "hsl(var(--warning))"
-                          : "hsl(var(--info))",
-                      }}
-                    />
+                ))}
+              </div>
+            ) : (
+              /* Basic — show progress bars with limits */
+              <div className="space-y-3">
+                <p className="label-xs mb-3">Usage</p>
+                {[
+                  { label: "Investments", used: stats.totalInvestments,  max: BASIC_INVEST_LIMIT, pct: investPct, icon: TrendingUp },
+                  { label: "Transactions", used: stats.totalTransactions, max: BASIC_TX_LIMIT,     pct: txPct,     icon: Receipt    },
+                ].map(({ label, used, max, pct, icon: Icon }) => (
+                  <div key={label} className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Icon className="w-3 h-3" style={{ color: "hsl(var(--foreground-tertiary))" }} />
+                        <span className="text-xs" style={{ color: "hsl(var(--foreground-secondary))" }}>
+                          {label}
+                        </span>
+                      </div>
+                      <span
+                        className="text-xs font-bold tabular"
+                        style={{
+                          color: pct >= 100
+                            ? "hsl(var(--negative))"
+                            : pct >= 80
+                            ? "hsl(var(--warning))"
+                            : "hsl(var(--foreground-secondary))",
+                          fontFamily: "Geist Mono",
+                        }}
+                      >
+                        {used}/{max}
+                      </span>
+                    </div>
+                    <div className="progress-track">
+                      <div
+                        className="progress-fill"
+                        style={{
+                          width: `${pct}%`,
+                          background: pct >= 100
+                            ? "hsl(var(--negative))"
+                            : pct >= 80
+                            ? "hsl(var(--warning))"
+                            : "hsl(var(--info))",
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Nav links */}
-          <div className="p-2" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
+          {/* ── NAV LINKS ────────────────────────────────────────────── */}
+          <div className="p-2" style={{ borderBottom: "1px solid hsl(var(--border-token))" }}>
             <button
               onClick={() => { setShowEdit(true); setOpen(false); }}
               className="nav-item w-full text-left"
@@ -243,39 +357,93 @@ export default function UserProfileDropdown({
               <User className="nav-icon w-4 h-4 shrink-0" />
               Profile Overview &amp; Stats
             </button>
-            <Link href="/dashboard/billing" onClick={() => setOpen(false)} className="nav-item">
+            <Link
+              href="/dashboard/billing"
+              onClick={() => setOpen(false)}
+              className="nav-item"
+            >
               <CreditCard className="nav-icon w-4 h-4 shrink-0" />
               Billing &amp; Subscription
             </Link>
           </div>
 
-          {/* Upgrade CTA */}
-          {isPro() ? <div className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
-            <button>Pro</button>
-          </div> :
-          <div className="px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
-            <RazorpayUpgradeButton
-              sessionUser={{ id: sessionUser.id, name: currentName, email: sessionUser.email, image: currentImage }}
-              buttonText="Upgrade to Pro (₹1,299)"
-              className="btn-premium w-full justify-center text-xs"
-            />
-          </div>}
-          
+          {/* ── PRO STATUS / UPGRADE CTA ─────────────────────────────── */}
+          {isPro ? (
+            <div
+              className="px-4 py-3.5"
+              style={{
+                borderBottom: "1px solid hsl(var(--border-token))",
+                background:   "hsl(var(--premium) / 0.04)",
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                  style={{
+                    background: "hsl(var(--premium-dim))",
+                    border:     "1px solid hsl(var(--premium) / 0.3)",
+                  }}
+                >
+                  <ShieldCheck className="w-4 h-4" style={{ color: "hsl(var(--premium))" }} />
+                </div>
+                <div className="min-w-0">
+                  <p
+                    className="text-xs font-bold"
+                    style={{ color: "hsl(var(--premium))" }}
+                  >
+                    Pro Tier Active
+                  </p>
+                  <p
+                    className="text-[11px] leading-relaxed mt-0.5"
+                    style={{ color: "hsl(var(--foreground-tertiary))" }}
+                  >
+                    All limits removed. Full platform access enabled. Thank you for supporting WealthWatch.
+                  </p>
+                  <Link
+                    href="/dashboard/billing"
+                    onClick={() => setOpen(false)}
+                    className="text-[11px] font-semibold mt-1.5 inline-flex items-center gap-1 transition-colors"
+                    style={{ color: "hsl(var(--premium) / 0.8)" }}
+                  >
+                    View subscription details →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="px-4 py-3"
+              style={{ borderBottom: "1px solid hsl(var(--border-token))" }}
+            >
+              <RazorpayUpgradeButton
+                sessionUser={{
+                  id:    sessionUser.id,
+                  name:  currentName,
+                  email: sessionUser.email,
+                  image: currentImage,
+                }}
+                buttonText="Upgrade to Pro (₹1,299)"
+                className="btn-premium w-full justify-center text-xs"
+              />
+            </div>
+          )}
 
-          {/* Sign out */}
+          {/* ── SIGN OUT ─────────────────────────────────────────────── */}
           <div className="p-2">
             <form action={signOutAction}>
               <button
                 type="submit"
                 className="nav-item w-full text-left"
-                style={{ color: "hsl(var(--negative) / 0.8)" }}
+                style={{ color: "hsl(var(--negative) / 0.75)" }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = "hsl(var(--negative))";
-                  (e.currentTarget as HTMLElement).style.background = "hsl(var(--negative-dim))";
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.color      = "hsl(var(--negative))";
+                  el.style.background = "hsl(var(--negative-dim))";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = "hsl(var(--negative) / 0.8)";
-                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.color      = "hsl(var(--negative) / 0.75)";
+                  el.style.background = "transparent";
                 }}
               >
                 <LogOut className="w-4 h-4 shrink-0" />
@@ -286,7 +454,7 @@ export default function UserProfileDropdown({
         </div>
       )}
 
-      {/* ── EDIT MODAL ───────────────────────────────────────────────────── */}
+      {/* ── EDIT PROFILE MODAL ─────────────────────────────────────────── */}
       {showEdit && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
@@ -296,24 +464,26 @@ export default function UserProfileDropdown({
           <div
             className="w-full max-w-md rounded-2xl animate-scale-in"
             style={{
-              background:  "hsl(var(--surface-overlay))",
-              border:      "1px solid hsl(var(--border))",
-              boxShadow:   "0 24px 80px hsl(220 14% 3% / 0.7)",
+              background: "hsl(var(--surface-overlay))",
+              border:     "1px solid hsl(var(--border-token))",
+              boxShadow:  "0 24px 80px hsl(220 14% 3% / 0.7)",
             }}
           >
             {/* Modal header */}
             <div
               className="flex items-center justify-between px-6 py-5"
-              style={{ borderBottom: "1px solid hsl(var(--border))" }}
+              style={{ borderBottom: "1px solid hsl(var(--border-token))" }}
             >
               <div>
-                <p className="text-base font-bold" style={{ color: "hsl(var(--foreground))" }}>Edit Profile</p>
-                <p className="label-xs mt-0.5">Update your display name and avatar</p>
+                <p
+                  className="text-base font-bold"
+                  style={{ color: "hsl(var(--foreground))" }}
+                >
+                  Edit Profile
+                </p>
+                <p className="label-xs mt-0.5">Update display name and avatar</p>
               </div>
-              <button
-                onClick={() => setShowEdit(false)}
-                className="btn-icon"
-              >
+              <button onClick={() => setShowEdit(false)} className="btn-icon">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -321,21 +491,34 @@ export default function UserProfileDropdown({
             {/* Stats bar */}
             <div
               className="grid grid-cols-2"
-              style={{ borderBottom: "1px solid hsl(var(--border))" }}
+              style={{ borderBottom: "1px solid hsl(var(--border-token))" }}
             >
               {[
-                { label: "Positions Tracked", val: stats.totalInvestments,  color: "hsl(var(--info))" },
-                { label: "Feed Records",       val: stats.totalTransactions, color: "hsl(var(--positive))" },
-              ].map((s) => (
+                { label: "Positions",    val: stats.totalInvestments,  color: "hsl(var(--info))"     },
+                { label: "Transactions", val: stats.totalTransactions, color: "hsl(var(--positive))" },
+              ].map((s, i) => (
                 <div
                   key={s.label}
                   className="px-6 py-4"
-                  style={{ borderRight: s.label === "Positions Tracked" ? "1px solid hsl(var(--border))" : "none" }}
+                  style={{
+                    borderRight: i === 0 ? "1px solid hsl(var(--border-token))" : "none",
+                  }}
                 >
                   <p className="label-xs mb-1">{s.label}</p>
-                  <p className="text-2xl font-bold tabular" style={{ color: s.color, fontFamily: "Geist" }}>
-                    {s.val}
+                  <p
+                    className="text-2xl font-bold tabular"
+                    style={{ color: s.color, fontFamily: "Geist" }}
+                  >
+                    {s.val.toLocaleString("en-IN")}
                   </p>
+                  {isPro && (
+                    <p
+                      className="text-[10px] mt-0.5 font-semibold"
+                      style={{ color: "hsl(var(--premium))", fontFamily: "Geist Mono" }}
+                    >
+                      Unlimited
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -353,7 +536,10 @@ export default function UserProfileDropdown({
                     className="field pr-9"
                     placeholder="Your name"
                   />
-                  <Edit3 className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "hsl(var(--foreground-tertiary))" }} />
+                  <Edit3
+                    className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{ color: "hsl(var(--foreground-tertiary))" }}
+                  />
                 </div>
               </div>
 
@@ -361,14 +547,25 @@ export default function UserProfileDropdown({
                 <label className="label-xs block mb-2">Profile Photo</label>
                 <div
                   className="flex items-center gap-4 rounded-xl p-3"
-                  style={{ background: "hsl(var(--input))", border: "1px solid hsl(var(--border))" }}
+                  style={{
+                    background: "hsl(var(--input))",
+                    border:     "1px solid hsl(var(--border-token))",
+                  }}
                 >
                   {currentImage ? (
-                    <img src={currentImage} alt="Preview" className="w-12 h-12 rounded-xl object-cover shrink-0" referrerPolicy="no-referrer" />
+                    <img
+                      src={currentImage}
+                      alt="Preview"
+                      className="w-12 h-12 rounded-xl object-cover shrink-0"
+                      referrerPolicy="no-referrer"
+                    />
                   ) : (
                     <div
                       className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold shrink-0"
-                      style={{ background: "hsl(var(--info-dim))", color: "hsl(var(--info))" }}
+                      style={{
+                        background: isPro ? "hsl(var(--premium-dim))" : "hsl(var(--info-dim))",
+                        color:      isPro ? "hsl(var(--premium))"     : "hsl(var(--info))",
+                      }}
                     >
                       {initials}
                     </div>

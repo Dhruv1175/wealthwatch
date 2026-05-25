@@ -29,8 +29,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth `}
     >
       <body className="min-h-full flex flex-col">
-        <NotificationProvider>
-          {children}</NotificationProvider> </body>
+          {children} </body>
     </html>
   );
 }
