@@ -1,111 +1,250 @@
-
 generator client {
   provider = "prisma-client-js"
 }
 
-
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
-enum UserTier{
+// ── Enums ──────────────────────────────────────────────────────────────────────
+
+enum UserTier {
   BASIC
   PRO
-}
-
-model User {
-  id    String @id @default(cuid())
-  name  String?
-  email String @unique
-  password String?
-  emailVerified DateTime?
-  image String?
-  tier  UserTier @default(BASIC)
-  subscriptionEnd  DateTime?
-  accounts Account[]
-  investments   Investment[]
-  systemevent   SystemEvent[]
-  transactions Transaction[]
-  auditLogs    SecurityAuditLog[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Transaction {
-  id String @id @default(cuid())
-  amount Float
-  description String
-  category String?
-  date DateTime
-  userId String
-  user User @relation(fields:[userId],references:[id])
-  @@index([userId, date])
-  @@index([userId, category])
-}
-
-model Account {
-  id String @id @default(cuid())
-  userId String
-  type String
-  provider String
-  providerAccountId String
-  refresh_token String? 
-  access_token String? 
-  expires_at Int?
-  token_type String?
-  scope String?
-  id_token String?
-  session_state String?
-  user User @relation(fields:[userId],references:[id])
-
-  @@unique([provider, providerAccountId])
 }
 
 enum InvestmentType {
   EQUITY_STOCK
   SIP_MUTUAL_FUND
+  MUTUAL_FUND_LUMPSUM
+  ETF
+  BOND
+  FIXED_DEPOSIT
+  RECURRING_DEPOSIT
+  GOLD
+  CRYPTO
+  PPF
+  EPF
+  NPS
+  REAL_ESTATE
+  US_STOCK
+  OTHER
+}
+
+enum CashFlowType {
+  BUY
+  SELL
+  DIVIDEND
+  INTEREST
+  SIP_INSTALMENT
+  BONUS_UNITS
+  REDEMPTION
+}
+
+enum GoalCategory {
+  RETIREMENT
+  EDUCATION
+  HOME
+  VEHICLE
+  EMERGENCY_FUND
+  VACATION
+  WEDDING
+  BUSINESS
+  OTHER
+}
+
+enum TaxType {
+  STCG
+  LTCG
+  STCL
+  LTCL
+  DIVIDEND
+  INTEREST_INCOME
+}
+
+// ── Models ─────────────────────────────────────────────────────────────────────
+
+model User {
+  id               String             @id @default(cuid())
+  name             String?
+  email            String             @unique
+  password         String?
+  emailVerified    DateTime?
+  image            String?
+  tier             UserTier           @default(BASIC)
+  subscriptionEnd  DateTime?
+  accounts         Account[]
+  investments      Investment[]
+  systemevent      SystemEvent[]
+  transactions     Transaction[]
+  auditLogs        SecurityAuditLog[]
+  portfolios       Portfolio[]
+  goals            FinancialGoal[]
+  taxEvents        TaxEvent[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  amount      Float
+  description String
+  category    String?
+  date        DateTime
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, date])
+  @@index([userId, category])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+}
+
+model Portfolio {
+  id          String       @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  color       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investments Investment[]
+
+  @@index([userId])
 }
 
 model Investment {
-  id              String @id @default(cuid())
-  userId          String
-  symbol          String
-  name            String
-  type            InvestmentType
-  sharesOwned     Float
-  avgBuyPrice     Float
-  sipAmount       Float?
-  sipDay          Int?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade) 
-  
-  @@index([userId])
+  id             String              @id @default(cuid())
+  userId         String
+  portfolioId    String?
+  goalId         String?
+  symbol         String
+  name           String
+  type           InvestmentType
+  sharesOwned    Float
+  avgBuyPrice    Float
+  sipAmount      Float?
+  sipDay         Int?
+  isin           String?             // ISIN code — mutual funds, bonds
+  folioNumber    String?             // MF folio number
+  broker         String?             // Zerodha, Groww, Kuvera, etc.
+  currency       String              @default("INR")
+  exchange       String?             // NSE, BSE, NASDAQ, etc.
+  sector         String?             // Technology, Finance, etc.
+  maturityDate   DateTime?           // FD, bond, RD maturity
+  interestRate   Float?              // FD/bond interest rate %
+  lockInDate     DateTime?           // ELSS, PPF lock-in end date
+  notes          String?
+  tags           String[]            @default([])
 
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  portfolio      Portfolio?          @relation(fields: [portfolioId], references: [id])
+  goal           FinancialGoal?      @relation(fields: [goalId], references: [id])
+  cashFlows      InvestmentCashFlow[]
+  taxEvents      TaxEvent[]
+
+  @@index([userId])
+  @@index([portfolioId])
+  @@index([goalId])
 }
 
-model SystemEvent {
-  id             String    @id @default(cuid())
+
+model InvestmentCashFlow {
+  id           String       @id @default(cuid())
+  investmentId String
+  type         CashFlowType
+  amount       Float       
+  date         DateTime
+  units        Float?
+  price        Float?
+  notes        String?
+  createdAt    DateTime     @default(now())
+  investment   Investment   @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+
+  @@index([investmentId, date])
+}
+
+
+
+model FinancialGoal {
+  id            String        @id @default(cuid())
+  userId        String
+  name          String
+  targetAmount  Float
+  targetDate    DateTime
+  currentAmount Float         @default(0)
+  category      GoalCategory
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investments   Investment[]
+
+  @@index([userId])
+}
+
+
+model TaxEvent {
+  id             String     @id @default(cuid())
   userId         String
-  title          String
-  message        String 
-  type           String
-  read           Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  
-  user           User      @relation(fields:[userId],references:[id],onDelete: Cascade)
+  investmentId   String
+  saleDate       DateTime
+  units          Float
+  buyPrice       Float
+  salePrice      Float
+  gainLoss       Float
+  holdingDays    Int
+  taxType        TaxType
+  financialYear  String
+  createdAt      DateTime   @default(now())
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investment     Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, financialYear])
+}
+
+
+model SystemEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, createdAt])
 }
 
-
 model SecurityAuditLog {
-  id String  @id @default(cuid())
-  userId String
-  event String
+  id        String   @id @default(cuid())
+  userId    String
+  event     String
   ipAddress String
   userAgent String
   createdAt DateTime @default(now())
-  user User @relation(fields:[userId],references:[id],onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, createdAt])
 }
-
