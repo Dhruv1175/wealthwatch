@@ -246,7 +246,7 @@ export async function POST(req: Request) {
         isin:         isin         ? String(isin).trim()       : null,
         folioNumber:  folioNumber  ? String(folioNumber).trim(): null,
         broker:       broker       ? String(broker).trim()     : null,
-        currency:     currency ? String(currency).trim() : "INR",
+        currency:     currency     ?? "INR",
         exchange:     exchange     ? String(exchange).trim()   : null,
         sector:       sector       ? String(sector).trim()     : null,
         maturityDate: maturityDate ? new Date(maturityDate)    : null,

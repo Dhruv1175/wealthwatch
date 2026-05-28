@@ -146,32 +146,32 @@ function EquityFields({ f, set }: { f: any; set: (k: string, v: string) => void 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Ticker Symbol" hint="e.g. RELIANCE.NS">
           <input type="text" placeholder="RELIANCE.NS" required className="field-mono"
-            value={f.symbol} onChange={(e) => set("symbol", e.target.value)} />
+            value={f.symbol ?? ""} onChange={(e) => set("symbol", e.target.value)} />
         </Field>
         <Field label="Company Name">
           <input type="text" placeholder="Reliance Industries" required className="field"
-            value={f.name} onChange={(e) => set("name", e.target.value)} />
+            value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Shares Owned">
           <input type="number" step="any" placeholder="10" required className="field"
-            value={f.sharesOwned} onChange={(e) => set("sharesOwned", e.target.value)} />
+            value={f.sharesOwned ?? ""} onChange={(e) => set("sharesOwned", e.target.value)} />
         </Field>
         <Field label="Avg Buy Price (₹)">
           <input type="number" step="any" placeholder="0.00" required className="field"
-            value={f.avgBuyPrice} onChange={(e) => set("avgBuyPrice", e.target.value)} />
+            value={f.avgBuyPrice ?? ""} onChange={(e) => set("avgBuyPrice", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Exchange">
-          <select className="field" value={f.exchange} onChange={(e) => set("exchange", e.target.value)}>
+          <select className="field" value={f.exchange ?? ""} onChange={(e) => set("exchange", e.target.value)}>
             <option value="">Select</option>
             {EXCHANGES.map((ex) => <option key={ex} value={ex}>{ex}</option>)}
           </select>
         </Field>
         <Field label="Sector">
-          <select className="field" value={f.sector} onChange={(e) => set("sector", e.target.value)}>
+          <select className="field" value={f.sector ?? ""} onChange={(e) => set("sector", e.target.value)}>
             <option value="">Select</option>
             {SECTORS.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -179,13 +179,13 @@ function EquityFields({ f, set }: { f: any; set: (k: string, v: string) => void 
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Broker">
-          <select className="field" value={f.broker} onChange={(e) => set("broker", e.target.value)}>
+          <select className="field" value={f.broker ?? ""} onChange={(e) => set("broker", e.target.value)}>
             <option value="">Select</option>
             {BROKERS.map((b) => <option key={b} value={b}>{b}</option>)}
           </select>
         </Field>
         <Field label="Currency">
-          <select className="field" value={f.currency} onChange={(e) => set("currency", e.target.value)}>
+          <select className="field" value={f.currency ?? ""} onChange={(e) => set("currency", e.target.value)}>
             {["INR","USD","EUR","GBP"].map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </Field>
@@ -200,45 +200,45 @@ function SIPFields({ f, set }: { f: any; set: (k: string, v: string) => void }) 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Fund Name">
           <input type="text" placeholder="Mirae Asset Large Cap" required className="field"
-            value={f.name} onChange={(e) => set("name", e.target.value)} />
+            value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
         </Field>
         <Field label="Fund House / AMC">
           <input type="text" placeholder="Mirae Asset" className="field"
-            value={f.symbol} onChange={(e) => set("symbol", e.target.value)} />
+            value={f.symbol ?? ""} onChange={(e) => set("symbol", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Monthly SIP Amount (₹)">
           <input type="number" step="any" placeholder="5000" required className="field"
-            value={f.sipAmount} onChange={(e) => set("sipAmount", e.target.value)} />
+            value={f.sipAmount ?? ""} onChange={(e) => set("sipAmount", e.target.value)} />
         </Field>
         <Field label="SIP Debit Date" hint="day of month">
           <input type="number" min={1} max={31} placeholder="5" required className="field"
-            value={f.sipDay} onChange={(e) => set("sipDay", e.target.value)} />
+            value={f.sipDay ?? ""} onChange={(e) => set("sipDay", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Total Units Accumulated" hint="from your statement">
           <input type="number" step="any" placeholder="234.56" className="field"
-            value={f.sharesOwned} onChange={(e) => set("sharesOwned", e.target.value)} />
+            value={f.sharesOwned ?? ""} onChange={(e) => set("sharesOwned", e.target.value)} />
         </Field>
         <Field label="Current NAV (₹)" hint="latest NAV">
           <input type="number" step="any" placeholder="45.23" className="field"
-            value={f.avgBuyPrice} onChange={(e) => set("avgBuyPrice", e.target.value)} />
+            value={f.avgBuyPrice ?? ""} onChange={(e) => set("avgBuyPrice", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Folio Number">
           <input type="text" placeholder="12345678" className="field-mono"
-            value={f.folioNumber} onChange={(e) => set("folioNumber", e.target.value)} />
+            value={f.folioNumber ?? ""} onChange={(e) => set("folioNumber", e.target.value)} />
         </Field>
         <Field label="ISIN">
           <input type="text" placeholder="INF123A01234" className="field-mono"
-            value={f.isin} onChange={(e) => set("isin", e.target.value)} />
+            value={f.isin ?? ""} onChange={(e) => set("isin", e.target.value)} />
         </Field>
       </div>
       <Field label="Platform / Broker">
-        <select className="field" value={f.broker} onChange={(e) => set("broker", e.target.value)}>
+        <select className="field" value={f.broker ?? ""} onChange={(e) => set("broker", e.target.value)}>
           <option value="">Select</option>
           {["Kuvera","Coin (Zerodha)","Groww","Paytm Money","MF Central","Direct (AMC)","Other"].map((b) => (
             <option key={b} value={b}>{b}</option>
@@ -255,31 +255,31 @@ function MFLumpFields({ f, set }: { f: any; set: (k: string, v: string) => void 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Fund Name">
           <input type="text" placeholder="Parag Parikh Flexi Cap" required className="field"
-            value={f.name} onChange={(e) => set("name", e.target.value)} />
+            value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
         </Field>
         <Field label="AMC / Fund House">
           <input type="text" placeholder="PPFAS" className="field"
-            value={f.symbol} onChange={(e) => set("symbol", e.target.value)} />
+            value={f.symbol ?? ""} onChange={(e) => set("symbol", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Units Purchased">
           <input type="number" step="any" placeholder="1000" required className="field"
-            value={f.sharesOwned} onChange={(e) => set("sharesOwned", e.target.value)} />
+            value={f.sharesOwned ?? ""} onChange={(e) => set("sharesOwned", e.target.value)} />
         </Field>
         <Field label="Purchase NAV (₹)">
           <input type="number" step="any" placeholder="52.40" required className="field"
-            value={f.avgBuyPrice} onChange={(e) => set("avgBuyPrice", e.target.value)} />
+            value={f.avgBuyPrice ?? ""} onChange={(e) => set("avgBuyPrice", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Folio Number">
           <input type="text" placeholder="12345678" className="field-mono"
-            value={f.folioNumber} onChange={(e) => set("folioNumber", e.target.value)} />
+            value={f.folioNumber ?? ""} onChange={(e) => set("folioNumber", e.target.value)} />
         </Field>
         <Field label="ISIN">
           <input type="text" placeholder="INF123A01234" className="field-mono"
-            value={f.isin} onChange={(e) => set("isin", e.target.value)} />
+            value={f.isin ?? ""} onChange={(e) => set("isin", e.target.value)} />
         </Field>
       </div>
     </>
@@ -291,35 +291,35 @@ function FDFields({ f, set }: { f: any; set: (k: string, v: string) => void }) {
     <>
       <Field label="Bank / NBFC Name">
         <input type="text" placeholder="SBI / HDFC Bank" required className="field"
-          value={f.name} onChange={(e) => set("name", e.target.value)} />
+          value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
       </Field>
       <input type="hidden" value={f.symbol || "FD"} />
       <div className="grid grid-cols-2 gap-3">
         <Field label="Principal Amount (₹)">
           <input type="number" step="any" placeholder="100000" required className="field"
-            value={f.avgBuyPrice} onChange={(e) => {
+            value={f.avgBuyPrice ?? ""} onChange={(e) => {
               set("avgBuyPrice", e.target.value);
               set("sharesOwned", "1"); // FD = 1 unit of principal value
             }} />
         </Field>
         <Field label="Interest Rate (% p.a.)">
           <input type="number" step="0.01" placeholder="7.25" required className="field"
-            value={f.interestRate} onChange={(e) => set("interestRate", e.target.value)} />
+            value={f.interestRate ?? ""} onChange={(e) => set("interestRate", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Start Date">
           <input type="date" required className="field"
-            value={f.startDate} onChange={(e) => set("startDate", e.target.value)} />
+            value={f.startDate ?? ""} onChange={(e) => set("startDate", e.target.value)} />
         </Field>
         <Field label="Maturity Date">
           <input type="date" required className="field"
-            value={f.maturityDate} onChange={(e) => set("maturityDate", e.target.value)} />
+            value={f.maturityDate ?? ""} onChange={(e) => set("maturityDate", e.target.value)} />
         </Field>
       </div>
       <Field label="FD Reference / Account Number" hint="optional">
         <input type="text" placeholder="FD Ref No." className="field-mono"
-          value={f.folioNumber} onChange={(e) => set("folioNumber", e.target.value)} />
+          value={f.folioNumber ?? ""} onChange={(e) => set("folioNumber", e.target.value)} />
       </Field>
     </>
   );
@@ -330,29 +330,29 @@ function RDFields({ f, set }: { f: any; set: (k: string, v: string) => void }) {
     <>
       <Field label="Bank Name">
         <input type="text" placeholder="Post Office / HDFC Bank" required className="field"
-          value={f.name} onChange={(e) => set("name", e.target.value)} />
+          value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Monthly Installment (₹)">
           <input type="number" step="any" placeholder="5000" required className="field"
-            value={f.sipAmount} onChange={(e) => {
+            value={f.sipAmount ?? ""} onChange={(e) => {
               set("sipAmount", e.target.value);
               set("sharesOwned", "1");
             }} />
         </Field>
         <Field label="Interest Rate (% p.a.)">
           <input type="number" step="0.01" placeholder="6.5" required className="field"
-            value={f.interestRate} onChange={(e) => set("interestRate", e.target.value)} />
+            value={f.interestRate ?? ""} onChange={(e) => set("interestRate", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Total Deposited So Far (₹)">
           <input type="number" step="any" placeholder="60000" required className="field"
-            value={f.avgBuyPrice} onChange={(e) => set("avgBuyPrice", e.target.value)} />
+            value={f.avgBuyPrice ?? ""} onChange={(e) => set("avgBuyPrice", e.target.value)} />
         </Field>
         <Field label="Maturity Date">
           <input type="date" required className="field"
-            value={f.maturityDate} onChange={(e) => set("maturityDate", e.target.value)} />
+            value={f.maturityDate ?? ""} onChange={(e) => set("maturityDate", e.target.value)} />
         </Field>
       </div>
     </>
@@ -365,31 +365,31 @@ function BondFields({ f, set }: { f: any; set: (k: string, v: string) => void })
       <div className="grid grid-cols-2 gap-3">
         <Field label="Bond Name">
           <input type="text" placeholder="NHAI Bonds 2024" required className="field"
-            value={f.name} onChange={(e) => set("name", e.target.value)} />
+            value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
         </Field>
         <Field label="ISIN">
           <input type="text" placeholder="INE001A07JQ4" className="field-mono"
-            value={f.isin} onChange={(e) => set("isin", e.target.value)} />
+            value={f.isin ?? ""} onChange={(e) => set("isin", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Units / Face Value Count">
           <input type="number" step="any" placeholder="10" required className="field"
-            value={f.sharesOwned} onChange={(e) => set("sharesOwned", e.target.value)} />
+            value={f.sharesOwned ?? ""} onChange={(e) => set("sharesOwned", e.target.value)} />
         </Field>
         <Field label="Purchase Price per Unit (₹)">
           <input type="number" step="any" placeholder="1000" required className="field"
-            value={f.avgBuyPrice} onChange={(e) => set("avgBuyPrice", e.target.value)} />
+            value={f.avgBuyPrice ?? ""} onChange={(e) => set("avgBuyPrice", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Coupon Rate (% p.a.)">
           <input type="number" step="0.01" placeholder="7.50" required className="field"
-            value={f.interestRate} onChange={(e) => set("interestRate", e.target.value)} />
+            value={f.interestRate ?? ""} onChange={(e) => set("interestRate", e.target.value)} />
         </Field>
         <Field label="Maturity Date">
           <input type="date" required className="field"
-            value={f.maturityDate} onChange={(e) => set("maturityDate", e.target.value)} />
+            value={f.maturityDate ?? ""} onChange={(e) => set("maturityDate", e.target.value)} />
         </Field>
       </div>
     </>
@@ -412,18 +412,17 @@ function GoldFields({ f, set }: { f: any; set: (k: string, v: string) => void })
           <div className="grid grid-cols-2 gap-3">
             <Field label="Weight (grams)">
               <input type="number" step="0.001" placeholder="10" required className="field"
-                value={f.sharesOwned} onChange={(e) => set("sharesOwned", e.target.value)} />
+                value={f.sharesOwned ?? ""} onChange={(e) => set("sharesOwned", e.target.value)} />
             </Field>
             <Field label="Avg Purchase Price (₹/gram)">
               <input type="number" step="any" placeholder="6200" required className="field"
-                value={f.avgBuyPrice} onChange={(e) => set("avgBuyPrice", e.target.value)} />
+                value={f.avgBuyPrice ?? ""} onChange={(e) => set("avgBuyPrice", e.target.value)} />
             </Field>
           </div>
-          <Field label="Description" hint="optional">
-            <input type="text" placeholder="24K gold coins / jewellery" className="field"
-              value={f.name} onChange={(e) => set("name", e.target.value)} />
+          <Field label="Description" hint="e.g. 24K gold coins, jewellery">
+            <input type="text" placeholder="24K gold coins" required className="field"
+              value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
           </Field>
-          <input type="hidden" value="GOLD_PHYSICAL" />
         </>
       )}
       {isSGB && (
@@ -431,25 +430,25 @@ function GoldFields({ f, set }: { f: any; set: (k: string, v: string) => void })
           <div className="grid grid-cols-2 gap-3">
             <Field label="Units (1 unit = 1 gram)">
               <input type="number" step="any" placeholder="10" required className="field"
-                value={f.sharesOwned} onChange={(e) => set("sharesOwned", e.target.value)} />
+                value={f.sharesOwned ?? ""} onChange={(e) => set("sharesOwned", e.target.value)} />
             </Field>
             <Field label="Issue Price (₹/unit)">
               <input type="number" step="any" placeholder="6000" required className="field"
-                value={f.avgBuyPrice} onChange={(e) => set("avgBuyPrice", e.target.value)} />
+                value={f.avgBuyPrice ?? ""} onChange={(e) => set("avgBuyPrice", e.target.value)} />
             </Field>
           </div>
-          <Field label="SGB Series / ISIN">
-            <input type="text" placeholder="SGB 2023-24 Series I" className="field"
-              value={f.name} onChange={(e) => set("name", e.target.value)} />
+          <Field label="SGB Series / Name" hint="required">
+            <input type="text" placeholder="SGB 2023-24 Series I" required className="field"
+              value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Issue Date">
               <input type="date" className="field"
-                value={f.startDate} onChange={(e) => set("startDate", e.target.value)} />
+                value={f.startDate ?? ""} onChange={(e) => set("startDate", e.target.value)} />
             </Field>
             <Field label="Maturity Date" hint="8 years from issue">
               <input type="date" className="field"
-                value={f.maturityDate} onChange={(e) => set("maturityDate", e.target.value)} />
+                value={f.maturityDate ?? ""} onChange={(e) => set("maturityDate", e.target.value)} />
             </Field>
           </div>
         </>
@@ -460,20 +459,23 @@ function GoldFields({ f, set }: { f: any; set: (k: string, v: string) => void })
           <div className="grid grid-cols-2 gap-3">
             <Field label="Ticker / Fund Name">
               <input type="text" placeholder="GOLDBEES.NS" required className="field-mono"
-                value={f.symbol} onChange={(e) => set("symbol", e.target.value)} />
+                value={f.symbol ?? ""} onChange={(e) => {
+                  set("symbol", e.target.value);
+                  if (!f.name) set("name", e.target.value); // auto-fill name from ticker
+                }} />
             </Field>
             <Field label="Units">
               <input type="number" step="any" placeholder="50" required className="field"
-                value={f.sharesOwned} onChange={(e) => set("sharesOwned", e.target.value)} />
+                value={f.sharesOwned ?? ""} onChange={(e) => set("sharesOwned", e.target.value)} />
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Avg Buy Price (₹)">
               <input type="number" step="any" placeholder="48.50" required className="field"
-                value={f.avgBuyPrice} onChange={(e) => set("avgBuyPrice", e.target.value)} />
+                value={f.avgBuyPrice ?? ""} onChange={(e) => set("avgBuyPrice", e.target.value)} />
             </Field>
             <Field label="Broker">
-              <select className="field" value={f.broker} onChange={(e) => set("broker", e.target.value)}>
+              <select className="field" value={f.broker ?? ""} onChange={(e) => set("broker", e.target.value)}>
                 <option value="">Select</option>
                 {BROKERS.map((b) => <option key={b} value={b}>{b}</option>)}
               </select>
@@ -492,25 +494,25 @@ function CryptoFields({ f, set }: { f: any; set: (k: string, v: string) => void 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Coin / Token">
           <input type="text" placeholder="Bitcoin" required className="field"
-            value={f.name} onChange={(e) => set("name", e.target.value)} />
+            value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
         </Field>
         <Field label="Ticker Symbol">
           <input type="text" placeholder="BTC" required className="field-mono"
-            value={f.symbol} onChange={(e) => set("symbol", e.target.value.toUpperCase())} />
+            value={f.symbol ?? ""} onChange={(e) => set("symbol", e.target.value.toUpperCase())} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Quantity" hint="e.g. 0.005 BTC">
           <input type="number" step="any" placeholder="0.005" required className="field"
-            value={f.sharesOwned} onChange={(e) => set("sharesOwned", e.target.value)} />
+            value={f.sharesOwned ?? ""} onChange={(e) => set("sharesOwned", e.target.value)} />
         </Field>
         <Field label="Avg Buy Price (₹)">
           <input type="number" step="any" placeholder="3200000" required className="field"
-            value={f.avgBuyPrice} onChange={(e) => set("avgBuyPrice", e.target.value)} />
+            value={f.avgBuyPrice ?? ""} onChange={(e) => set("avgBuyPrice", e.target.value)} />
         </Field>
       </div>
       <Field label="Exchange / Wallet">
-        <select className="field" value={f.broker} onChange={(e) => set("broker", e.target.value)}>
+        <select className="field" value={f.broker ?? ""} onChange={(e) => set("broker", e.target.value)}>
           <option value="">Select</option>
           {["CoinDCX","WazirX","Binance","Coinbase","Self-custody Wallet","Other"].map((b) => (
             <option key={b} value={b}>{b}</option>
@@ -526,34 +528,34 @@ function PPFFields({ f, set }: { f: any; set: (k: string, v: string) => void }) 
     <>
       <Field label="Bank / Post Office">
         <input type="text" placeholder="SBI / Post Office" required className="field"
-          value={f.name} onChange={(e) => set("name", e.target.value)} />
+          value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Total Balance (₹)" hint="current balance">
           <input type="number" step="any" placeholder="250000" required className="field"
-            value={f.avgBuyPrice} onChange={(e) => {
+            value={f.avgBuyPrice ?? ""} onChange={(e) => {
               set("avgBuyPrice", e.target.value);
               set("sharesOwned", "1");
             }} />
         </Field>
         <Field label="Annual Contribution (₹)">
           <input type="number" step="any" placeholder="150000" className="field"
-            value={f.sipAmount} onChange={(e) => set("sipAmount", e.target.value)} />
+            value={f.sipAmount ?? ""} onChange={(e) => set("sipAmount", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Account Opened Date">
           <input type="date" className="field"
-            value={f.startDate} onChange={(e) => set("startDate", e.target.value)} />
+            value={f.startDate ?? ""} onChange={(e) => set("startDate", e.target.value)} />
         </Field>
         <Field label="Maturity Date" hint="15 years from opening">
           <input type="date" className="field"
-            value={f.maturityDate} onChange={(e) => set("maturityDate", e.target.value)} />
+            value={f.maturityDate ?? ""} onChange={(e) => set("maturityDate", e.target.value)} />
         </Field>
       </div>
       <Field label="PPF Account Number" hint="optional">
         <input type="text" placeholder="PPF/ACC/12345" className="field-mono"
-          value={f.folioNumber} onChange={(e) => set("folioNumber", e.target.value)} />
+          value={f.folioNumber ?? ""} onChange={(e) => set("folioNumber", e.target.value)} />
       </Field>
     </>
   );
@@ -564,24 +566,24 @@ function EPFFields({ f, set }: { f: any; set: (k: string, v: string) => void }) 
     <>
       <Field label="Employer / Company">
         <input type="text" placeholder="Company Name" required className="field"
-          value={f.name} onChange={(e) => set("name", e.target.value)} />
+          value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Total EPF Balance (₹)">
           <input type="number" step="any" placeholder="500000" required className="field"
-            value={f.avgBuyPrice} onChange={(e) => {
+            value={f.avgBuyPrice ?? ""} onChange={(e) => {
               set("avgBuyPrice", e.target.value);
               set("sharesOwned", "1");
             }} />
         </Field>
         <Field label="Monthly Employee Contribution (₹)">
           <input type="number" step="any" placeholder="4000" className="field"
-            value={f.sipAmount} onChange={(e) => set("sipAmount", e.target.value)} />
+            value={f.sipAmount ?? ""} onChange={(e) => set("sipAmount", e.target.value)} />
         </Field>
       </div>
       <Field label="UAN Number" hint="optional">
         <input type="text" placeholder="100123456789" className="field-mono"
-          value={f.folioNumber} onChange={(e) => set("folioNumber", e.target.value)} />
+          value={f.folioNumber ?? ""} onChange={(e) => set("folioNumber", e.target.value)} />
       </Field>
     </>
   );
@@ -593,7 +595,7 @@ function NPSFields({ f, set }: { f: any; set: (k: string, v: string) => void }) 
       <div className="grid grid-cols-2 gap-3">
         <Field label="NPS Fund Manager">
           <input type="text" placeholder="SBI Pension / HDFC Pension" required className="field"
-            value={f.name} onChange={(e) => set("name", e.target.value)} />
+            value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
         </Field>
         <Field label="Tier">
           <select className="field" value={f.nTier ?? "Tier I"}
@@ -605,19 +607,19 @@ function NPSFields({ f, set }: { f: any; set: (k: string, v: string) => void }) 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Total Balance (₹)">
           <input type="number" step="any" placeholder="300000" required className="field"
-            value={f.avgBuyPrice} onChange={(e) => {
+            value={f.avgBuyPrice ?? ""} onChange={(e) => {
               set("avgBuyPrice", e.target.value);
               set("sharesOwned", "1");
             }} />
         </Field>
         <Field label="Monthly Contribution (₹)">
           <input type="number" step="any" placeholder="5000" className="field"
-            value={f.sipAmount} onChange={(e) => set("sipAmount", e.target.value)} />
+            value={f.sipAmount ?? ""} onChange={(e) => set("sipAmount", e.target.value)} />
         </Field>
       </div>
       <Field label="PRAN Number" hint="optional">
         <input type="text" placeholder="110012345678" className="field-mono"
-          value={f.folioNumber} onChange={(e) => set("folioNumber", e.target.value)} />
+          value={f.folioNumber ?? ""} onChange={(e) => set("folioNumber", e.target.value)} />
       </Field>
     </>
   );
@@ -628,34 +630,34 @@ function RealEstateFields({ f, set }: { f: any; set: (k: string, v: string) => v
     <>
       <Field label="Property Name / Description">
         <input type="text" placeholder="2BHK Flat, Powai Mumbai" required className="field"
-          value={f.name} onChange={(e) => set("name", e.target.value)} />
+          value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Purchase Price (₹)">
           <input type="number" step="any" placeholder="5000000" required className="field"
-            value={f.avgBuyPrice} onChange={(e) => {
+            value={f.avgBuyPrice ?? ""} onChange={(e) => {
               set("avgBuyPrice", e.target.value);
               set("sharesOwned", "1");
             }} />
         </Field>
         <Field label="Current Market Value (₹)">
           <input type="number" step="any" placeholder="6500000" className="field"
-            value={f.currentValOverride} onChange={(e) => set("currentValOverride", e.target.value)} />
+            value={f.currentValOverride ?? ""} onChange={(e) => set("currentValOverride", e.target.value)} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Purchase Date">
           <input type="date" className="field"
-            value={f.startDate} onChange={(e) => set("startDate", e.target.value)} />
+            value={f.startDate ?? ""} onChange={(e) => set("startDate", e.target.value)} />
         </Field>
         <Field label="Area (sq ft)" hint="optional">
           <input type="number" step="any" placeholder="850" className="field"
-            value={f.areaSqft} onChange={(e) => set("areaSqft", e.target.value)} />
+            value={f.areaSqft ?? ""} onChange={(e) => set("areaSqft", e.target.value)} />
         </Field>
       </div>
       <Field label="Rental Income / month (₹)" hint="if applicable">
         <input type="number" step="any" placeholder="25000" className="field"
-          value={f.rentalIncome} onChange={(e) => set("rentalIncome", e.target.value)} />
+          value={f.rentalIncome ?? ""} onChange={(e) => set("rentalIncome", e.target.value)} />
       </Field>
     </>
   );
@@ -666,19 +668,19 @@ function OtherFields({ f, set }: { f: any; set: (k: string, v: string) => void }
     <>
       <Field label="Asset Name">
         <input type="text" placeholder="Angel investment / ESOP / Other" required className="field"
-          value={f.name} onChange={(e) => set("name", e.target.value)} />
+          value={f.name ?? ""} onChange={(e) => set("name", e.target.value)} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Current Value (₹)">
           <input type="number" step="any" placeholder="100000" required className="field"
-            value={f.avgBuyPrice} onChange={(e) => {
+            value={f.avgBuyPrice ?? ""} onChange={(e) => {
               set("avgBuyPrice", e.target.value);
               set("sharesOwned", "1");
             }} />
         </Field>
         <Field label="Cost / Investment (₹)">
           <input type="number" step="any" placeholder="80000" className="field"
-            value={f.costOverride} onChange={(e) => set("costOverride", e.target.value)} />
+            value={f.costOverride ?? ""} onChange={(e) => set("costOverride", e.target.value)} />
         </Field>
       </div>
     </>
@@ -735,10 +737,16 @@ export default function InvestmentManager({
     if (atLimit) { setLimitModal(true); return; }
     setSubmitting(true);
     try {
+      // Ensure name is always populated — fallback for shapes where
+      // name comes from an optional-looking field (e.g. Gold physical)
+      const payload = {
+        ...form,
+        name: (form.name ?? "").trim() || form.symbol || form.type || "Asset",
+      };
       const res = await fetch("/api/investments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (res.status === 403) { const err = await res.json(); if (err.code === "TIER_LIMIT_EXCEEDED") { setLimitModal(true); return; } }
       if (res.ok) {
