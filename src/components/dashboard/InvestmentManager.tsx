@@ -94,7 +94,7 @@ interface PortfolioData {
     longTermGains: number;  longTermLoss: number;
     estimatedSTCGTax: number; estimatedLTCGTax: number;
   };
-  meta: { totalCount: number; hiddenCount: number; tierCapped: boolean; upgradeRequired: boolean };
+  meta: { totalCount: number; hiddenCount: number; tierCapped: boolean; upgradeRequired: boolean; isPro: boolean };
 }
 
 interface InvestmentManagerProps {
@@ -716,7 +716,8 @@ export default function InvestmentManager({
   }
 
   const positions = data?.positions ?? [];
-  const atLimit   = positions.length >= 5 && (data?.meta.tierCapped ?? true);
+  const isPro     = data?.meta.isPro ?? false;
+  const atLimit   = !isPro && positions.length >= 5;
   const pnlPos    = (data?.totalPnl ?? 0) >= 0;
 
   const load = useCallback(async () => {
@@ -990,13 +991,23 @@ export default function InvestmentManager({
             </div>
             <div className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold"
               style={{
-                background: atLimit ? "hsl(var(--negative-dim))" : "hsl(var(--surface-raised))",
-                border:     `1px solid ${atLimit ? "hsl(var(--negative) / 0.3)" : "hsl(var(--border-token))"}`,
-                color:      atLimit ? "hsl(var(--negative))" : "hsl(var(--foreground-secondary))",
+                background: atLimit ? "hsl(var(--negative-dim))" : isPro ? "hsl(var(--premium-dim))" : "hsl(var(--surface-raised))",
+                border:     `1px solid ${atLimit ? "hsl(var(--negative) / 0.3)" : isPro ? "hsl(var(--premium) / 0.25)" : "hsl(var(--border-token))"}`,
+                color:      atLimit ? "hsl(var(--negative))" : isPro ? "hsl(var(--premium))" : "hsl(var(--foreground-secondary))",
                 fontFamily: "Geist Mono",
               }}>
               {atLimit && <Lock className="w-3 h-3 mr-1" />}
-              {positions.length}/5
+              {isPro ? (
+                <>
+                  {positions.length}
+                  <span className="ml-1 text-[9px] font-bold px-1 py-0.5 rounded"
+                    style={{ background: "hsl(var(--premium-dim))", color: "hsl(var(--premium))" }}>
+                    ∞
+                  </span>
+                </>
+              ) : (
+                <>{positions.length}/5</>
+              )}
             </div>
           </div>
 

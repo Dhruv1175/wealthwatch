@@ -167,7 +167,9 @@ export async function getPortfolioNews(symbols: string[]): Promise<NewsNode[]> {
 
   try {
     // Querying the primary holding ticker returns a clean news array payload
-    const data = await yahooFinance.search(symbols[0], { newsCount: 4 });
+    const data = await yahooFinance.search(symbols[0], { newsCount: 4 },{
+      validateResult:false
+    });
     
     return (data.news || []).map((item: any) => ({
       title: item.title,

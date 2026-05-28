@@ -162,8 +162,6 @@ export default function SummaryPanel() {
               </div>
             </div>
           </div>
-
-          {/* 3. IQR Outliers Tracking Vector Board Panel */}
           <div className="border border-white/10 bg-zinc-950 p-5">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
