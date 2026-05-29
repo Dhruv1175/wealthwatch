@@ -9,6 +9,7 @@ import InvestmentManager from "@/components/dashboard/InvestmentManager";
 import MacroNewsPanel from "@/components/dashboard/MacroNewsPanel";
 import UserProfileDropdown from "@/components/dashboard/UserProfileDropdown";
 import Sidebar from "@/components/dashboard/Sidebar";
+import AddTransactionButtonInline from "@/components/dashboard/AddTransactionButton";   // <-- import
 import Link from "next/link";
 import {
   FileText, ReceiptText,
@@ -29,7 +30,6 @@ export default async function Dashboard({ searchParams }: PageProps) {
 
   const [recentTransactions, totalTransactionCount, totalInvestmentsCount, user] =
     await Promise.all([
-      // Only fetch 5 for the preview — full list lives on /dashboard/transactions
       prisma.transaction.findMany({
         where:   { userId: session.user.id },
         orderBy: { date: "desc" },
@@ -60,7 +60,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
       <Sidebar />
 
       <div className="app-content">
-        {/* ── TOP BAR ─────────────────────────────────────────────────────── */}
+        {/* TOP BAR */}
         <header
           className="sticky top-0 z-20 flex items-center justify-between px-8 h-16 shrink-0"
           style={{
@@ -107,7 +107,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
           />
         </header>
 
-        {/* ── PAGE BODY ───────────────────────────────────────────────────── */}
+        {/* PAGE BODY */}
         <main className="flex-1 px-8 py-8 space-y-8">
 
           {/* Analytics */}
@@ -188,9 +188,9 @@ export default async function Dashboard({ searchParams }: PageProps) {
                 border:     "1px solid hsl(var(--border-token))",
               }}
             >
-              {/* Header */}
+              {/* Header – now includes the inline add button */}
               <div
-                className="flex items-center justify-between px-6 py-4 shrink-0"
+                className="flex items-center justify-between px-6 py-4 shrink-0 flex-wrap gap-3"
                 style={{ borderBottom: "1px solid hsl(var(--border-token))" }}
               >
                 <div className="flex items-center gap-3">
@@ -213,14 +213,14 @@ export default async function Dashboard({ searchParams }: PageProps) {
                     <p className="label-xs">Latest 5 entries</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  {/* Real total — not capped */}
+                <div className="flex items-center gap-3 flex-wrap">
                   <span
                     className="badge-muted"
                     style={{ fontFamily: "Geist Mono" }}
                   >
                     {totalTransactionCount} total
                   </span>
+                  <AddTransactionButtonInline />
                   <Link
                     href="/dashboard/transactions"
                     className="flex items-center gap-1.5 text-xs font-semibold transition-colors"
@@ -228,6 +228,8 @@ export default async function Dashboard({ searchParams }: PageProps) {
                   >
                     View all <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
+                  {/* Minimal inline add button – subtle, matches design */}
+                  
                 </div>
               </div>
 

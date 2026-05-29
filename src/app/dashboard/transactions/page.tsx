@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import RazorpayUpgradeButton from "@/components/dashboard/RazorpayUpgradeButton";
+import AddTransactionButtonInline from "@/components/dashboard/AddTransactionButton";
 
 // ── Tier limits ────────────────────────────────────────────────────────────────
 const BASIC_TX_LIMIT   = 50;
@@ -33,7 +34,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   const isPro  = user?.tier === "PRO";
   const offset = (page - 1) * PAGE_SIZE;
 
-  // ── Fetch all for counts, limited set for display ─────────────────────────
   const [allCount, categories] = await Promise.all([
     prisma.transaction.count({ where: { userId: session.user.id } }),
     prisma.transaction.groupBy({
@@ -42,18 +42,15 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
     }),
   ]);
 
-  // For BASIC users: hard cap at BASIC_TX_LIMIT records total (not just display)
   const effectiveLimit = isPro ? allCount : Math.min(allCount, BASIC_TX_LIMIT);
   const totalPages     = Math.ceil(effectiveLimit / PAGE_SIZE);
   const isAtLimit      = !isPro && allCount > BASIC_TX_LIMIT;
 
-  // Build where clause
   const where = {
     userId:   session.user.id,
     ...(category ? { category } : {}),
   };
 
-  // For BASIC: only query within the allowed 50 records
   let transactions;
   if (!isPro) {
     const allowedIds = await prisma.transaction.findMany({
@@ -85,7 +82,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
     <div className="app-shell">
       <Sidebar />
       <div className="app-content">
-
         {/* Top bar */}
         <header
           className="sticky top-0 z-20 flex items-center justify-between px-4 md:px-8 h-16 shrink-0"
@@ -122,7 +118,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
         </header>
 
         <main className="flex-1 px-4 md:px-8 py-6 md:py-8 space-y-6 max-w-6xl mx-auto w-full">
-
           {/* Page heading + summary stats */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
@@ -134,7 +129,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                 Transactions
               </h1>
             </div>
-            {/* Quick stats - hidden on mobile, visible on md+ */}
             <div className="hidden md:flex items-center gap-4">
               <div className="text-right">
                 <p className="label-xs mb-0.5">Total Income</p>
@@ -161,7 +155,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
             </div>
           </div>
 
-          {/* ── LIMIT BANNER (BASIC at cap) ──────────────────────────────── */}
+          {/* Limit banner */}
           {isAtLimit && (
             <div
               className="rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
@@ -205,38 +199,42 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
             </div>
           )}
 
-          {/* ── FILTER BAR ───────────────────────────────────────────────── */}
-          <div
-            className="rounded-2xl px-4 md:px-5 py-3 flex items-center gap-3 flex-wrap"
-            style={{
-              background: "hsl(var(--surface))",
-              border:     "1px solid hsl(var(--border-token))",
-            }}
-          >
-            <Filter className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(var(--foreground-tertiary))" }} />
-            <span className="label-xs shrink-0">Filter:</span>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/dashboard/transactions"
-                className={`badge transition-colors ${!category ? "badge-info" : "badge-muted"}`}
-              >
-                All
-              </Link>
-              {categories
-                .filter((c) => c.category)
-                .map((c) => (
-                  <Link
-                    key={c.category}
-                    href={`/dashboard/transactions?category=${encodeURIComponent(c.category!)}`}
-                    className={`badge transition-colors ${category === c.category ? "badge-info" : "badge-muted"}`}
-                  >
-                    {c.category}
-                  </Link>
-                ))}
+          {/* Filter bar + Add transaction button */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div
+              className="rounded-2xl px-4 md:px-5 py-3 flex items-center gap-3 flex-wrap flex-1"
+              style={{
+                background: "hsl(var(--surface))",
+                border:     "1px solid hsl(var(--border-token))",
+              }}
+            >
+              <Filter className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(var(--foreground-tertiary))" }} />
+              <span className="label-xs shrink-0">Filter:</span>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/dashboard/transactions"
+                  className={`badge transition-colors ${!category ? "badge-info" : "badge-muted"}`}
+                >
+                  All
+                </Link>
+                {categories
+                  .filter((c) => c.category)
+                  .map((c) => (
+                    <Link
+                      key={c.category}
+                      href={`/dashboard/transactions?category=${encodeURIComponent(c.category!)}`}
+                      className={`badge transition-colors ${category === c.category ? "badge-info" : "badge-muted"}`}
+                    >
+                      {c.category}
+                    </Link>
+                  ))}
+              </div>
             </div>
+
+            <AddTransactionButtonInline />
           </div>
 
-          {/* ── TRANSACTION TABLE (responsive wrapper) ───────────────────── */}
+          {/* Transaction table */}
           <div
             className="rounded-2xl overflow-hidden"
             style={{
@@ -244,10 +242,8 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
               border:     "1px solid hsl(var(--border-token))",
             }}
           >
-            {/* Horizontal scroll container for mobile */}
             <div className="overflow-x-auto">
               <div style={{ minWidth: "640px" }} className="md:min-w-0">
-                {/* Column headers */}
                 <div
                   className="grid px-4 md:px-6 py-3"
                   style={{
@@ -292,7 +288,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                               : "none",
                         }}
                       >
-                        {/* Description */}
                         <div className="flex items-center gap-3 min-w-0">
                           <div
                             className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center"
@@ -306,20 +301,13 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                               : <ArrowDownRight className="w-3.5 h-3.5" style={{ color: "hsl(var(--negative))" }} />
                             }
                           </div>
-                          <p
-                            className="text-sm font-medium truncate"
-                            style={{ color: "hsl(var(--foreground))" }}
-                          >
+                          <p className="text-sm font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
                             {tx.description}
                           </p>
                         </div>
-
-                        {/* Category */}
                         <span className="badge-muted truncate max-w-[120px]">
                           {tx.category ?? "Unclassified"}
                         </span>
-
-                        {/* Date */}
                         <p
                           className="text-xs tabular"
                           style={{
@@ -333,8 +321,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                             year:  "numeric",
                           })}
                         </p>
-
-                        {/* Amount */}
                         <p
                           className="text-sm font-bold tabular text-right"
                           style={{
@@ -352,7 +338,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
             </div>
           </div>
 
-          {/* ── PAGINATION (responsive) ──────────────────────────────────── */}
+          {/* Pagination – original left/right layout */}
           {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-xs order-1 sm:order-none" style={{ color: "hsl(var(--foreground-tertiary))", fontFamily: "Geist Mono" }}>
@@ -377,8 +363,8 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                         href={`/dashboard/transactions?page=${p}${category ? `&category=${encodeURIComponent(category)}` : ""}`}
                         className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-xs font-semibold transition-colors"
                         style={{
-                          background:  page === p ? "hsl(var(--info))"              : "hsl(var(--surface-raised))",
-                          color:       page === p ? "hsl(var(--foreground))"        : "hsl(var(--foreground-tertiary))",
+                          background:  page === p ? "hsl(var(--info))" : "hsl(var(--surface-raised))",
+                          color:       page === p ? "hsl(var(--foreground))" : "hsl(var(--foreground-tertiary))",
                           border:      page === p ? "1px solid hsl(var(--info) / 0.4)" : "1px solid hsl(var(--border-token))",
                           fontFamily:  "Geist Mono",
                         }}
@@ -400,7 +386,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
             </div>
           )}
 
-          {/* ── UPGRADE WALL (BASIC — no transactions yet but at limit) ──── */}
+          {/* Upgrade wall */}
           {!isPro && (
             <div
               className="rounded-2xl p-6 md:p-8 text-center space-y-4 relative overflow-hidden"
@@ -418,10 +404,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
               />
               <div className="relative">
                 <span className="badge-premium mb-3 inline-flex">Pro Feature</span>
-                <p
-                  className="text-base font-bold"
-                  style={{ color: "hsl(var(--foreground))" }}
-                >
+                <p className="text-base font-bold" style={{ color: "hsl(var(--foreground))" }}>
                   Unlock unlimited transaction history
                 </p>
                 <p

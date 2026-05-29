@@ -23,28 +23,40 @@ const NAV = [
   { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
+// Active icon colors (inactive icons use default CSS color)
+const getActiveIconColor = (label: string): string | undefined => {
+  switch (label) {
+    case "Overview":
+      return "hsl(var(--info))";        // original blue
+    case "Portfolio":
+    case "Transactions":
+      return "hsl(var(--positive))";    // green
+    case "Billing":
+      return "hsl(var(--premium))";     // warm yellow / gold
+    case "Settings":
+      return "hsl(var(--info))";        // keep consistent with overview
+    default:
+      return undefined;
+  }
+};
+
 export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(true);
 
-  // Handle screen size changes
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 768px)");
-    
     const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
       const large = e.matches;
       setIsLargeScreen(large);
       setIsOpen(large);
     };
-
     handleMediaChange(mediaQuery);
-    
     mediaQuery.addEventListener("change", handleMediaChange);
     return () => mediaQuery.removeEventListener("change", handleMediaChange);
   }, []);
 
-  // Lock body scroll when sidebar is open on mobile
   useEffect(() => {
     if (!isLargeScreen && isOpen) {
       document.body.style.overflow = "hidden";
@@ -61,7 +73,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile Hamburger Button - only visible on small screens when sidebar is closed */}
+      {/* Mobile Hamburger Button */}
       {!isLargeScreen && !isOpen && (
         <button
           onClick={openSidebar}
@@ -77,7 +89,7 @@ export default function Sidebar() {
         </button>
       )}
 
-      {/* Backdrop - only visible on mobile when sidebar is open */}
+      {/* Backdrop */}
       {!isLargeScreen && isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
@@ -134,7 +146,6 @@ export default function Sidebar() {
               </p>
             </div>
           </div>
-          {/* Mobile close button inside sidebar */}
           {!isLargeScreen && (
             <button
               onClick={closeSidebar}
@@ -147,15 +158,15 @@ export default function Sidebar() {
           )}
         </div>
 
-        {/* Nav */}
+        {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           <p className="label-xs px-3 mb-3">Navigation</p>
           {NAV.map(({ href, icon: Icon, label }) => {
-            // Active: exact match for overview, prefix match for sub-pages
             const active =
               href === "/dashboard"
                 ? pathname === "/dashboard"
                 : pathname === href || pathname.startsWith(href + "/");
+            const activeIconColor = active ? getActiveIconColor(label) : undefined;
 
             return (
               <Link
@@ -164,7 +175,10 @@ export default function Sidebar() {
                 className={`nav-item ${active ? "active" : ""}`}
                 onClick={!isLargeScreen ? closeSidebar : undefined}
               >
-                <Icon className="nav-icon w-4 h-4 shrink-0" />
+                <Icon
+                  className="nav-icon w-4 h-4 shrink-0"
+                  style={activeIconColor ? { color: activeIconColor } : undefined}
+                />
                 <span>{label}</span>
                 {active && (
                   <ChevronRight
