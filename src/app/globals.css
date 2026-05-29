@@ -77,18 +77,36 @@
 @layer components {
   /* ── Layout ────────────────────────────────────────────────────────── */
   /* Sidebar is position:fixed so content just needs a matching left padding */
+  @layer components {
+  /* Sidebar is position:fixed, content will adapt via margin on desktop only */
   .app-shell {
     display: block;
     min-height: 100vh;
   }
 
+  /* Mobile first: no margin, full width */
   .app-content {
-    margin-left: var(--sidebar-width);
+    margin-left: 0;
+    width: 100%;
     min-height: 100vh;
-    width: calc(100% - var(--sidebar-width));
     display: flex;
     flex-direction: column;
   }
+
+  /* Desktop: add space for the fixed sidebar */
+  @media (min-width: 768px) {
+    .app-content {
+      margin-left: var(--sidebar-width);
+      width: calc(100% - var(--sidebar-width));
+    }
+    
+  }
+  @media (max-width: 767px) {
+    .sticky.top-0 {
+      padding-left: 56px !important;
+    }
+  }
+}
 
   /* ── Cards / Panels ────────────────────────────────────────────────── */
   .card {

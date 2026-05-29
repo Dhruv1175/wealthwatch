@@ -54,10 +54,8 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   };
 
   // For BASIC: only query within the allowed 50 records
-  // We do this by taking the oldest-first IDs of the 50 allowed, then filtering
   let transactions;
   if (!isPro) {
-    // Fetch only the 50 most recent allowed records, then paginate client-side via skip
     const allowedIds = await prisma.transaction.findMany({
       where:   { userId: session.user.id },
       orderBy: { date: "desc" },
@@ -90,22 +88,22 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
 
         {/* Top bar */}
         <header
-          className="sticky top-0 z-20 flex items-center justify-between px-8 h-16 shrink-0"
+          className="sticky top-0 z-20 flex items-center justify-between px-4 md:px-8 h-16 shrink-0"
           style={{
             background:     "hsl(220 14% 6% / 0.9)",
             backdropFilter: "blur(20px)",
             borderBottom:   "1px solid hsl(var(--border-token))",
           }}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 text-sm transition-colors text-secondary hover:text-foreground"
+              className="flex items-center gap-1 md:gap-2 text-sm transition-colors text-secondary hover:text-foreground"
             >
               <ArrowLeft className="w-4 h-4" />
-              Dashboard
+              <span className="hidden sm:inline">Dashboard</span>
             </Link>
-            <span style={{ color: "hsl(var(--border-token))" }}>·</span>
+            <span style={{ color: "hsl(var(--border-token))" }} className="hidden sm:inline">·</span>
             <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
               Transactions
             </span>
@@ -114,29 +112,29 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
           {/* Tier badge */}
           {isPro ? (
             <span className="badge-premium flex items-center gap-1.5">
-              <Zap className="w-3 h-3" /> Pro — Unlimited Access
+              <Zap className="w-3 h-3" /> Pro — Unlimited
             </span>
           ) : (
-            <span className="badge-muted flex items-center gap-1.5">
-              <Lock className="w-3 h-3" /> Basic — {Math.min(allCount, BASIC_TX_LIMIT)}/{BASIC_TX_LIMIT} records
+            <span className="badge-muted flex items-center gap-1.5 text-xs">
+              <Lock className="w-3 h-3" /> Basic — {Math.min(allCount, BASIC_TX_LIMIT)}/{BASIC_TX_LIMIT}
             </span>
           )}
         </header>
 
-        <main className="flex-1 px-8 py-8 space-y-6 max-w-6xl mx-auto w-full">
+        <main className="flex-1 px-4 md:px-8 py-6 md:py-8 space-y-6 max-w-6xl mx-auto w-full">
 
           {/* Page heading + summary stats */}
-          <div className="flex items-end justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
               <p className="label-xs mb-1">Ledger</p>
               <h1
-                className="text-3xl font-black tracking-tight"
+                className="text-2xl md:text-3xl font-black tracking-tight"
                 style={{ color: "hsl(var(--foreground))" }}
               >
                 Transactions
               </h1>
             </div>
-            {/* Quick stats */}
+            {/* Quick stats - hidden on mobile, visible on md+ */}
             <div className="hidden md:flex items-center gap-4">
               <div className="text-right">
                 <p className="label-xs mb-0.5">Total Income</p>
@@ -166,7 +164,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
           {/* ── LIMIT BANNER (BASIC at cap) ──────────────────────────────── */}
           {isAtLimit && (
             <div
-              className="rounded-2xl p-5 flex items-center justify-between gap-6"
+              className="rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
               style={{
                 background: "hsl(var(--warning-dim))",
                 border:     "1px solid hsl(var(--warning) / 0.3)",
@@ -190,8 +188,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                     className="text-xs mt-0.5 leading-relaxed"
                     style={{ color: "hsl(var(--foreground-secondary))" }}
                   >
-                    You have {allCount} transactions total. Basic tier shows only the most
-                    recent {BASIC_TX_LIMIT}. Upgrade to Pro to access your complete history.
+                    Basic tier shows only the most recent {BASIC_TX_LIMIT}. Upgrade to Pro for complete history.
                   </p>
                 </div>
               </div>
@@ -203,21 +200,21 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                   image: user?.image,
                 }}
                 buttonText="Upgrade to Pro"
-                className="btn-premium text-xs shrink-0 px-5 py-2.5"
+                className="btn-premium text-xs shrink-0 px-5 py-2.5 w-full md:w-auto text-center"
               />
             </div>
           )}
 
           {/* ── FILTER BAR ───────────────────────────────────────────────── */}
           <div
-            className="rounded-2xl px-5 py-3.5 flex items-center gap-3 flex-wrap"
+            className="rounded-2xl px-4 md:px-5 py-3 flex items-center gap-3 flex-wrap"
             style={{
               background: "hsl(var(--surface))",
               border:     "1px solid hsl(var(--border-token))",
             }}
           >
             <Filter className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(var(--foreground-tertiary))" }} />
-            <span className="label-xs shrink-0">Filter by category:</span>
+            <span className="label-xs shrink-0">Filter:</span>
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/dashboard/transactions"
@@ -239,7 +236,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
             </div>
           </div>
 
-          {/* ── TRANSACTION TABLE ────────────────────────────────────────── */}
+          {/* ── TRANSACTION TABLE (responsive wrapper) ───────────────────── */}
           <div
             className="rounded-2xl overflow-hidden"
             style={{
@@ -247,134 +244,138 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
               border:     "1px solid hsl(var(--border-token))",
             }}
           >
-            {/* Column headers */}
-            <div
-              className="grid px-6 py-3"
-              style={{
-                gridTemplateColumns: "1fr 160px 120px 120px",
-                borderBottom:       "1px solid hsl(var(--border-token))",
-                background:         "hsl(var(--surface-raised))",
-              }}
-            >
-              <span className="label-xs">Description</span>
-              <span className="label-xs">Category</span>
-              <span className="label-xs">Date</span>
-              <span className="label-xs text-right">Amount</span>
-            </div>
+            {/* Horizontal scroll container for mobile */}
+            <div className="overflow-x-auto">
+              <div style={{ minWidth: "640px" }} className="md:min-w-0">
+                {/* Column headers */}
+                <div
+                  className="grid px-4 md:px-6 py-3"
+                  style={{
+                    gridTemplateColumns: "1fr 140px 110px 120px",
+                    borderBottom:       "1px solid hsl(var(--border-token))",
+                    background:         "hsl(var(--surface-raised))",
+                  }}
+                >
+                  <span className="label-xs">Description</span>
+                  <span className="label-xs">Category</span>
+                  <span className="label-xs">Date</span>
+                  <span className="label-xs text-right">Amount</span>
+                </div>
 
-            {transactions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-3">
-                <Search className="w-8 h-8" style={{ color: "hsl(var(--foreground-tertiary))" }} />
-                <p className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
-                  No transactions found
-                </p>
-                <p className="text-xs" style={{ color: "hsl(var(--foreground-tertiary))" }}>
-                  {category ? "Try clearing the category filter" : "Upload a statement to populate your ledger"}
-                </p>
-                {category && (
-                  <Link href="/dashboard/transactions" className="text-xs font-semibold" style={{ color: "hsl(var(--info))" }}>
-                    Clear filter
-                  </Link>
-                )}
-              </div>
-            ) : (
-              transactions.map((tx, i) => {
-                const positive = tx.amount >= 0;
-                return (
-                  <div
-                    key={tx.id}
-                    className="grid px-6 py-4 tx-row-hover transition-colors items-center"
-                    style={{
-                      gridTemplateColumns: "1fr 160px 120px 120px",
-                      borderBottom:
-                        i < transactions.length - 1
-                          ? "1px solid hsl(var(--border-subtle))"
-                          : "none",
-                    }}
-                  >
-                    {/* Description */}
-                    <div className="flex items-center gap-3 min-w-0">
+                {transactions.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 gap-3">
+                    <Search className="w-8 h-8" style={{ color: "hsl(var(--foreground-tertiary))" }} />
+                    <p className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                      No transactions found
+                    </p>
+                    <p className="text-xs" style={{ color: "hsl(var(--foreground-tertiary))" }}>
+                      {category ? "Try clearing the category filter" : "Upload a statement to populate your ledger"}
+                    </p>
+                    {category && (
+                      <Link href="/dashboard/transactions" className="text-xs font-semibold" style={{ color: "hsl(var(--info))" }}>
+                        Clear filter
+                      </Link>
+                    )}
+                  </div>
+                ) : (
+                  transactions.map((tx, i) => {
+                    const positive = tx.amount >= 0;
+                    return (
                       <div
-                        className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center"
+                        key={tx.id}
+                        className="grid px-4 md:px-6 py-4 tx-row-hover transition-colors items-center"
                         style={{
-                          background: positive ? "hsl(var(--positive-dim))" : "hsl(var(--negative-dim))",
-                          border:     `1px solid hsl(var(--${positive ? "positive" : "negative"}) / 0.2)`,
+                          gridTemplateColumns: "1fr 140px 110px 120px",
+                          borderBottom:
+                            i < transactions.length - 1
+                              ? "1px solid hsl(var(--border-subtle))"
+                              : "none",
                         }}
                       >
-                        {positive
-                          ? <ArrowUpRight   className="w-3.5 h-3.5" style={{ color: "hsl(var(--positive))" }} />
-                          : <ArrowDownRight className="w-3.5 h-3.5" style={{ color: "hsl(var(--negative))" }} />
-                        }
+                        {/* Description */}
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center"
+                            style={{
+                              background: positive ? "hsl(var(--positive-dim))" : "hsl(var(--negative-dim))",
+                              border:     `1px solid hsl(var(--${positive ? "positive" : "negative"}) / 0.2)`,
+                            }}
+                          >
+                            {positive
+                              ? <ArrowUpRight   className="w-3.5 h-3.5" style={{ color: "hsl(var(--positive))" }} />
+                              : <ArrowDownRight className="w-3.5 h-3.5" style={{ color: "hsl(var(--negative))" }} />
+                            }
+                          </div>
+                          <p
+                            className="text-sm font-medium truncate"
+                            style={{ color: "hsl(var(--foreground))" }}
+                          >
+                            {tx.description}
+                          </p>
+                        </div>
+
+                        {/* Category */}
+                        <span className="badge-muted truncate max-w-[120px]">
+                          {tx.category ?? "Unclassified"}
+                        </span>
+
+                        {/* Date */}
+                        <p
+                          className="text-xs tabular"
+                          style={{
+                            color:      "hsl(var(--foreground-tertiary))",
+                            fontFamily: "Geist Mono",
+                          }}
+                        >
+                          {new Date(tx.date).toLocaleDateString("en-IN", {
+                            day:   "2-digit",
+                            month: "short",
+                            year:  "numeric",
+                          })}
+                        </p>
+
+                        {/* Amount */}
+                        <p
+                          className="text-sm font-bold tabular text-right"
+                          style={{
+                            color:      positive ? "hsl(var(--positive))" : "hsl(var(--negative))",
+                            fontFamily: "Geist Mono",
+                          }}
+                        >
+                          {positive ? "+" : "−"}₹{Math.abs(tx.amount).toFixed(2)}
+                        </p>
                       </div>
-                      <p
-                        className="text-sm font-medium truncate"
-                        style={{ color: "hsl(var(--foreground))" }}
-                      >
-                        {tx.description}
-                      </p>
-                    </div>
-
-                    {/* Category */}
-                    <span className="badge-muted truncate max-w-[140px]">
-                      {tx.category ?? "Unclassified"}
-                    </span>
-
-                    {/* Date */}
-                    <p
-                      className="text-xs tabular"
-                      style={{
-                        color:      "hsl(var(--foreground-tertiary))",
-                        fontFamily: "Geist Mono",
-                      }}
-                    >
-                      {new Date(tx.date).toLocaleDateString("en-IN", {
-                        day:   "2-digit",
-                        month: "short",
-                        year:  "numeric",
-                      })}
-                    </p>
-
-                    {/* Amount */}
-                    <p
-                      className="text-sm font-bold tabular text-right"
-                      style={{
-                        color:      positive ? "hsl(var(--positive))" : "hsl(var(--negative))",
-                        fontFamily: "Geist Mono",
-                      }}
-                    >
-                      {positive ? "+" : "−"}₹{Math.abs(tx.amount).toFixed(2)}
-                    </p>
-                  </div>
-                );
-              })
-            )}
+                    );
+                  })
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* ── PAGINATION ───────────────────────────────────────────────── */}
+          {/* ── PAGINATION (responsive) ──────────────────────────────────── */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-xs" style={{ color: "hsl(var(--foreground-tertiary))", fontFamily: "Geist Mono" }}>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-xs order-1 sm:order-none" style={{ color: "hsl(var(--foreground-tertiary))", fontFamily: "Geist Mono" }}>
                 Page {page} of {totalPages} · {effectiveLimit} accessible records
                 {isAtLimit && ` (${allCount} total)`}
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-center gap-2">
                 {page > 1 && (
                   <Link
                     href={`/dashboard/transactions?page=${page - 1}${category ? `&category=${encodeURIComponent(category)}` : ""}`}
-                    className="btn-ghost text-xs px-4 py-2"
+                    className="btn-ghost text-xs px-3 py-1.5 md:px-4 md:py-2"
                   >
                     ← Previous
                   </Link>
                 )}
-                {/* Page number pills */}
-                <div className="flex gap-1">
+                <div className="flex flex-wrap gap-1">
                   {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
                     const p = i + 1;
                     return (
                       <Link
                         key={p}
                         href={`/dashboard/transactions?page=${p}${category ? `&category=${encodeURIComponent(category)}` : ""}`}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold transition-colors"
+                        className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-lg text-xs font-semibold transition-colors"
                         style={{
                           background:  page === p ? "hsl(var(--info))"              : "hsl(var(--surface-raised))",
                           color:       page === p ? "hsl(var(--foreground))"        : "hsl(var(--foreground-tertiary))",
@@ -390,7 +391,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                 {page < totalPages && (
                   <Link
                     href={`/dashboard/transactions?page=${page + 1}${category ? `&category=${encodeURIComponent(category)}` : ""}`}
-                    className="btn-ghost text-xs px-4 py-2"
+                    className="btn-ghost text-xs px-3 py-1.5 md:px-4 md:py-2"
                   >
                     Next →
                   </Link>
@@ -402,7 +403,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
           {/* ── UPGRADE WALL (BASIC — no transactions yet but at limit) ──── */}
           {!isPro && (
             <div
-              className="rounded-2xl p-8 text-center space-y-4 relative overflow-hidden"
+              className="rounded-2xl p-6 md:p-8 text-center space-y-4 relative overflow-hidden"
               style={{
                 background: "hsl(var(--surface))",
                 border:     "1px solid hsl(var(--premium) / 0.2)",
@@ -440,7 +441,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                     image: user?.image,
                   }}
                   buttonText="Upgrade to Pro (₹1,299 / year)"
-                  className="btn-premium text-sm px-8 py-3 inline-flex items-center gap-2"
+                  className="btn-premium text-sm px-6 md:px-8 py-3 inline-flex items-center gap-2"
                 />
               </div>
             </div>
