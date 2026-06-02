@@ -70,10 +70,10 @@ interface Position {
   isin: string | null; folioNumber: string | null;
   maturityDate: string | null; interestRate: number | null;
   notes: string | null; tags: string[];
+  createdAt: string;
+  updatedAt: string;
   portfolio: { id: string; name: string; color: string | null } | null;
   goal: { id: string; name: string; targetAmount: number } | null;
-  createdAt: string; 
-  updatedAt: string;
 }
 
 interface PortfolioData {
@@ -114,7 +114,7 @@ function gradeColor(grade: string) {
 }
 
 // ── Compute client-side returns for fixed-income / retirement positions ────────
-function computePositionReturns(pos: Position): {
+function computePositionReturns(pos: Position, goldPriceOverride?: number): {
   investedAmount: number; displayValue: number; profit: number;
   pnlPct: number; maturityValue: number | null; label: string;
   isProjection: boolean; breakdown?: { label: string; value: number }[];
@@ -163,9 +163,95 @@ function computePositionReturns(pos: Position): {
     return { investedAmount: calc.investedAmount, displayValue: calc.currentValue, profit: calc.maturityProfit, pnlPct: calc.maturityPct, maturityValue: calc.maturityValue, label: "Projected Returns", isProjection: true, breakdown: calc.breakdown };
   }
 
-  // Default: use live price data
-  const invested = pos.avgBuyPrice * pos.sharesOwned;
-  return { investedAmount: invested, displayValue: pos.currentValue, profit: pos.profitOrLoss, pnlPct: pos.pnlPercentage, maturityValue: null, label: "P&L", isProjection: false };
+  // ── Physical gold — no ticker, calculate from cost basis only ───────────────
+  // Yahoo Finance won't have a price for physical gold. We show cost basis
+  // and zero P&L with a note to update manually, OR if currentPrice > avgBuyPrice
+  // it means the user somehow got a price — use it.
+  if (shape === "gold") {
+    const invested     = pos.avgBuyPrice * pos.sharesOwned;
+    // goldPriceOverride: user-entered current price per gram/unit
+    const effectivePrice = goldPriceOverride ?? (pos.currentPrice !== pos.avgBuyPrice ? pos.currentPrice : null);
+    const currentVal   = effectivePrice
+      ? effectivePrice * pos.sharesOwned
+      : invested; // fallback: no live price for physical gold
+    const profit       = currentVal - invested;
+    const pnlPct       = invested > 0 ? (profit / invested) * 100 : 0;
+    const goldForm     = (pos.notes ?? "").includes("SGB") ? "SGB" : "Physical / ETF";
+    return {
+      investedAmount: invested,
+      displayValue:   currentVal,
+      profit,
+      pnlPct:         parseFloat(pnlPct.toFixed(2)),
+      maturityValue:  pos.maturityDate ? currentVal * 1.02 : null, // rough SGB projection
+      label:          goldForm === "SGB" ? "Appreciation + Interest" : "Appreciation",
+      isProjection:   pos.currentPrice === pos.avgBuyPrice, // projection if no live price
+    };
+  }
+
+  // ── Real estate — cost basis vs user-entered current value ───────────────────
+  if (shape === "realestate") {
+    const invested   = pos.avgBuyPrice * pos.sharesOwned;
+    const currentVal = pos.currentPrice > 0 && pos.currentPrice !== pos.avgBuyPrice
+      ? pos.currentPrice
+      : invested;
+    const profit     = currentVal - invested;
+    const pnlPct     = invested > 0 ? (profit / invested) * 100 : 0;
+    const rentalNote = pos.sipAmount
+      ? [{ label: "Purchase Price", value: invested }, { label: "Current Value", value: currentVal }, { label: "Monthly Rental", value: pos.sipAmount }]
+      : [{ label: "Purchase Price", value: invested }, { label: "Current Value", value: currentVal }];
+    return {
+      investedAmount: invested,
+      displayValue:   currentVal,
+      profit:         parseFloat(profit.toFixed(2)),
+      pnlPct:         parseFloat(pnlPct.toFixed(2)),
+      maturityValue:  null,
+      label:          "Appreciation",
+      isProjection:   pos.currentPrice === pos.avgBuyPrice,
+      breakdown:      rentalNote,
+    };
+  }
+
+  // ── EPF / NPS — simple balance tracking, no live price ───────────────────────
+  if (shape === "epf" || shape === "nps") {
+    const balance    = pos.avgBuyPrice * pos.sharesOwned;
+    const monthly    = pos.sipAmount ?? 0;
+    // EPF: 8.15% p.a. (current rate); NPS: ~10% avg projected
+    const rate       = shape === "epf" ? 8.15 : 10;
+    const elapsedYrs = Math.max(0, (Date.now() - new Date(pos.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 365));
+    const projected  = balance * Math.pow(1 + rate / 100, Math.max(1, elapsedYrs));
+    const profit     = projected - balance;
+    const pnlPct     = balance > 0 ? (profit / balance) * 100 : 0;
+    return {
+      investedAmount: balance,
+      displayValue:   balance,
+      profit:         parseFloat(profit.toFixed(2)),
+      pnlPct:         parseFloat(pnlPct.toFixed(2)),
+      maturityValue:  parseFloat(projected.toFixed(2)),
+      label:          "Projected Returns",
+      isProjection:   true,
+      breakdown: [
+        { label: "Current Balance",  value: balance },
+        { label: "Rate Applied",     value: rate },
+        { label: "Projected Value",  value: parseFloat(projected.toFixed(2)) },
+        { label: "Projected Profit", value: parseFloat(profit.toFixed(2)) },
+      ],
+    };
+  }
+
+  // ── Crypto / Equity / ETF / MF Lumpsum — use Yahoo Finance live price ────────
+  // These have real tickers. profitOrLoss and pnlPercentage come from stock-engine.
+  // If currentPrice === avgBuyPrice it means Yahoo failed — show invested only.
+  const invested   = pos.avgBuyPrice * pos.sharesOwned;
+  const liveWorked = pos.currentPrice !== pos.avgBuyPrice;
+  return {
+    investedAmount: invested,
+    displayValue:   pos.currentValue,
+    profit:         pos.profitOrLoss,
+    pnlPct:         pos.pnlPercentage,
+    maturityValue:  null,
+    label:          liveWorked ? "Unrealised P&L" : "P&L (price unavailable)",
+    isProjection:   !liveWorked,
+  };
 }
 
 // ── Field wrapper ──────────────────────────────────────────────────────────────
@@ -790,6 +876,7 @@ export default function InvestmentManager({ totalInvestmentsCount = 0, sessionUs
   const [activeTab, setTab]         = useState<"positions"|"analytics"|"tax">("positions");
   const [showNotes, setShowNotes]   = useState(false);
   const [expandedId, setExpanded]   = useState<string | null>(null);
+  const [goldPrices, setGoldPrices] = useState<Record<string, string>>({});
   const { triggerToast }            = useNotifications();
 
   const [form, setFormRaw] = useState<Record<string, string>>({ type: "EQUITY_STOCK", currency: "INR" });
@@ -1178,7 +1265,8 @@ export default function InvestmentManager({ totalInvestmentsCount = 0, sessionUs
                 {positions.map((pos) => {
                   const sym      = getCurrencySymbol(pos.currency ?? "INR");
                   const cur      = pos.currency ?? "INR";
-                  const returns  = computePositionReturns(pos as any);
+                  const goldOverride = goldPrices[pos.id] ? parseFloat(goldPrices[pos.id]) : undefined;
+                  const returns  = computePositionReturns(pos, goldOverride);
                   const profit   = returns.profit >= 0;
                   const shp      = getShape(pos.type);
                   const showChart = ["equity","mf_lump","crypto","gold"].includes(shp) && !!pos.symbol;
@@ -1304,6 +1392,26 @@ export default function InvestmentManager({ totalInvestmentsCount = 0, sessionUs
                           </div>
                         )}
                       </div>
+
+                      {/* Gold price input — physical gold has no live feed */}
+                      {getShape(pos.type) === "gold" && (
+                        <div className="rounded-xl px-3 py-2 mb-3 flex items-center gap-2"
+                          style={{ background: "hsl(var(--warning-dim))", border: "1px solid hsl(var(--warning) / 0.2)" }}>
+                          <Coins className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(var(--warning))" }} />
+                          <label className="text-xs shrink-0" style={{ color: "hsl(var(--warning))" }}>
+                            Current price (₹/gram):
+                          </label>
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder={String(pos.avgBuyPrice)}
+                            className="field-mono flex-1 py-1 text-xs"
+                            style={{ height: "28px", fontSize: "11px" }}
+                            value={goldPrices[pos.id] ?? ""}
+                            onChange={(e) => setGoldPrices((prev) => ({ ...prev, [pos.id]: e.target.value }))}
+                          />
+                        </div>
+                      )}
 
                       <div className="flex items-center justify-between pt-3"
                         style={{ borderTop: "1px solid hsl(var(--border-token))" }}>
