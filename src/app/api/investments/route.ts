@@ -54,6 +54,8 @@ export async function GET() {
       select: { tier: true },
     });
 
+    
+
     const isPro = user?.tier === "PRO";
 
     const investments = await prisma.investment.findMany({
@@ -66,6 +68,7 @@ export async function GET() {
       },
     });
 
+    type InvestmentWithRelations = (typeof investments)[number];
     // Tier enforcement — BASIC sees first 5 only
     const visible = isPro
       ? investments
@@ -76,8 +79,8 @@ export async function GET() {
       await getTrackedInvestments(session.user.id);
 
     // Enrich with live prices where available, fall back gracefully
-    const enriched = visible.map((inv) => {
-      const live = positions.find((p) => p.id === inv.id);
+    const enriched = visible.map((inv: InvestmentWithRelations) => {
+      const live = positions.find((p:any) => p.id === inv.id);
       return {
         ...inv,
         currentPrice:   live?.currentPrice   ?? inv.avgBuyPrice,
@@ -90,7 +93,7 @@ export async function GET() {
 
     // XIRR per position
     const positionsWithXirr = enriched.map((pos) => {
-      const flows = pos.cashFlows.map((cf) => ({
+      const flows = pos.cashFlows.map((cf: any) => ({
         date:   new Date(cf.date),
         amount: cf.amount,
       }));
@@ -101,7 +104,7 @@ export async function GET() {
 
     // Portfolio-wide XIRR
     const allFlows = enriched.flatMap((pos) =>
-      pos.cashFlows.map((cf) => ({ date: new Date(cf.date), amount: cf.amount }))
+      pos.cashFlows.map((cf:any) => ({ date: new Date(cf.date), amount: cf.amount }))
     );
     allFlows.push({ date: new Date(), amount: totalValue });
     const portfolioXirr = allFlows.length >= 2 ? calculateXIRR(allFlows) : null;
@@ -116,7 +119,7 @@ export async function GET() {
     );
 
     const totalCost = enriched.reduce(
-      (s, p) => s + p.avgBuyPrice * p.sharesOwned,
+      (s:number, p:any) => s + p.avgBuyPrice * p.sharesOwned,
       0
     );
 
