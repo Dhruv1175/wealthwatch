@@ -139,7 +139,7 @@ export async function GET() {
     });
 
     const taxSummary = calculateTaxSummary(
-      enriched.map((p) => ({
+      enriched.map((p:EnrichedInvestment) => ({
         currentValue: p.currentValue,
         costBasis:    p.avgBuyPrice * p.sharesOwned,
         purchaseDate: new Date(p.createdAt),
