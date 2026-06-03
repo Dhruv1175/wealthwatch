@@ -68,7 +68,7 @@ export async function GET(req: Request) {
       take:    BASIC_TX_LIMIT,
       select:  { id: true },
     });
-    const idSet = allowedIds.map((t) => t.id);
+    const idSet = allowedIds.map((t: { id: string }) => t.id);
 
     transactions = await prisma.transaction.findMany({
       where:   { ...where, id: { in: idSet } },
