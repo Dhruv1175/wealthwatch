@@ -130,7 +130,7 @@ export async function GET() {
     );
 
     const healthScore = calculateHealthScore({
-      positions: enriched.map((p) => ({
+      positions: enriched.map((p:EnrichedInvestment) => ({
         name: p.name, type: p.type, currentValue: p.currentValue,
       })),
       xirr:      portfolioXirr,
