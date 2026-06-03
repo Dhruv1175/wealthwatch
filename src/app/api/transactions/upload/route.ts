@@ -41,13 +41,13 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    if (result.error) {
-      return NextResponse.json({ error: result.error }, { status: 422 });
+    if ((result as any).error) {
+      return NextResponse.json({ error: (result as any).error }, { status: 422 });
     }
 
     return NextResponse.json({ 
       success: true, 
-      message: `Successfully processed and auto-committed ${result.count} statement ledger records.` 
+      message: `Successfully processed and auto-committed ${(result as any).count} statement ledger records.` 
     });
 
   } catch (err) {
