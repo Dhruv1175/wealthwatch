@@ -34,7 +34,7 @@ export async function GET() {
   const enriched = goals.map((goal: GoalWithInvestments) => {
     // Sum invested across linked investments
     const totalInvested = goal.investments.reduce(
-      (s:number , inv) => s + inv.avgBuyPrice * inv.sharesOwned,
+      (s:number , inv:(typeof goal.investments)[number]) => s + inv.avgBuyPrice * inv.sharesOwned,
       0
     );
 
