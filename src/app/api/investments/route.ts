@@ -90,9 +90,15 @@ export async function GET() {
         sipReminderDue: live?.sipReminderDue ?? false,
       };
     });
-
+    type EnrichedInvestment = InvestmentWithRelations & {
+  currentPrice: number;
+  currentValue: number;
+  profitOrLoss: number;
+  pnlPercentage: number;
+  sipReminderDue: boolean;
+};
     // XIRR per position
-    const positionsWithXirr = enriched.map((pos) => {
+    const positionsWithXirr = enriched.map((pos: EnrichedInvestment) => {
       const flows = pos.cashFlows.map((cf: any) => ({
         date:   new Date(cf.date),
         amount: cf.amount,
@@ -103,14 +109,14 @@ export async function GET() {
     });
 
     // Portfolio-wide XIRR
-    const allFlows = enriched.flatMap((pos) =>
+    const allFlows = enriched.flatMap((pos: EnrichedInvestment) =>
       pos.cashFlows.map((cf:any) => ({ date: new Date(cf.date), amount: cf.amount }))
     );
     allFlows.push({ date: new Date(), amount: totalValue });
     const portfolioXirr = allFlows.length >= 2 ? calculateXIRR(allFlows) : null;
 
     const allocation = analyzeAllocation(
-      enriched.map((p) => ({
+      enriched.map((p:EnrichedInvestment) => ({
         name:         p.name,
         type:         p.type,
         currentValue: p.currentValue,
@@ -119,7 +125,7 @@ export async function GET() {
     );
 
     const totalCost = enriched.reduce(
-      (s:number, p:any) => s + p.avgBuyPrice * p.sharesOwned,
+      (s:number, p:EnrichedInvestment) => s + p.avgBuyPrice * p.sharesOwned,
       0
     );
 
