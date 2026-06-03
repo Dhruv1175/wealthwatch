@@ -36,6 +36,7 @@ export async function GET() {
     where:   { userId: session.user.id },
     orderBy: { createdAt: "asc" },
   });
+  type InvestmentType = (typeof allInvestments)[number];
 
   const totalCount  = allInvestments.length;
   const hiddenCount = isPro ? 0 : Math.max(0, totalCount - BASIC_INVESTMENT_LIMIT);
@@ -47,7 +48,7 @@ export async function GET() {
 
   // ── Hydrate prices (parallel) ─────────────────────────────────────────────
   const positions = await Promise.all(
-    visibleInvestments.map(async (inv) => {
+    visibleInvestments.map(async (inv: InvestmentType) => {
       const currentPrice = await fetchCurrentPrice(inv.symbol, inv.avgBuyPrice);
       const currentValue = parseFloat((currentPrice * inv.sharesOwned).toFixed(2));
       const costBasis    = parseFloat((inv.avgBuyPrice * inv.sharesOwned).toFixed(2));
@@ -72,21 +73,22 @@ export async function GET() {
       };
     })
   );
+  type HydratedPosition = (typeof positions)[number];
 
-  const totalValue = positions.reduce((s, p) => s + p.currentValue, 0);
-  const totalPnl   = positions.reduce((s, p) => s + p.profitOrLoss, 0);
+  const totalValue = positions.reduce((s:number, p:HydratedPosition) => s + p.currentValue, 0);
+  const totalPnl   = positions.reduce((s:number, p:HydratedPosition) => s + p.profitOrLoss, 0);
 
   // ── SIP reminders ─────────────────────────────────────────────────────────
   const today = new Date().getDate();
   const sipReminders = allInvestments
     .filter(
-      (inv) =>
+      (inv: InvestmentType) =>
         inv.type === "SIP_MUTUAL_FUND" &&
         inv.sipDay !== null &&
         Math.abs((inv.sipDay ?? 0) - today) <= 2
     )
     .map(
-      (inv) =>
+      (inv: InvestmentType) =>
         `SIP due: ${inv.name} (${inv.symbol}) — ₹${inv.sipAmount?.toLocaleString("en-IN")} on day ${inv.sipDay}`
     );
 
