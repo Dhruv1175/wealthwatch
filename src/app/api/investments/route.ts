@@ -230,7 +230,7 @@ export async function POST(req: Request) {
       isin, folioNumber, broker, currency, exchange,
       sector, maturityDate, interestRate, lockInDate,
       notes, tags, portfolioId, goalId,
-      avgBuyPrice,
+      avgBuyPrice, currentValOverride,
     } = body;
 
     const investment = await prisma.investment.create({
@@ -254,8 +254,10 @@ export async function POST(req: Request) {
         lockInDate:   lockInDate   ? new Date(lockInDate)      : null,
         notes:        notes        ? String(notes).trim()      : null,
         tags:         Array.isArray(tags) ? tags : [],
-        portfolioId:  portfolioId  ?? null,
-        goalId:       goalId       ?? null,
+        portfolioId:         portfolioId    ?? null,
+        goalId:              goalId         ?? null,
+        // Real estate: store user-entered current market value separately from purchase price
+        currentMarketValue:  currentValOverride ? parseFloat(currentValOverride) : null,
       },
     });
 

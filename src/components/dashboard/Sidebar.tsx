@@ -12,6 +12,7 @@ import {
   Activity,
   ChevronRight,
   Menu,
+  Target,
   X,
 } from "lucide-react";
 
@@ -19,6 +20,7 @@ const NAV = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
   { href: "/dashboard/portfolio", icon: TrendingUp, label: "Portfolio" },
   { href: "/dashboard/transactions", icon: Receipt, label: "Transactions" },
+  { href: "/dashboard/goals", icon: Target, label: "Goals" },
   { href: "/dashboard/billing", icon: CreditCard, label: "Billing" },
   { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
@@ -31,6 +33,8 @@ const getActiveIconColor = (label: string): string | undefined => {
     case "Portfolio":
     case "Transactions":
       return "hsl(var(--positive))";    // green
+    case "Goals":
+      return "hsl(var(--accent))";      // purple
     case "Billing":
       return "hsl(var(--premium))";     // warm yellow / gold
     case "Settings":

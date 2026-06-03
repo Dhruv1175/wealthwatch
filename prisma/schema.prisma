@@ -116,6 +116,8 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
+// ── Portfolio grouping ─────────────────────────────────────────────────────────
+
 model Portfolio {
   id          String       @id @default(cuid())
   userId      String
@@ -130,11 +132,15 @@ model Portfolio {
   @@index([userId])
 }
 
+// ── Extended Investment model ──────────────────────────────────────────────────
+
 model Investment {
   id             String              @id @default(cuid())
   userId         String
   portfolioId    String?
   goalId         String?
+
+  // Core fields (existing)
   symbol         String
   name           String
   type           InvestmentType
@@ -142,6 +148,8 @@ model Investment {
   avgBuyPrice    Float
   sipAmount      Float?
   sipDay         Int?
+
+  // Extended fields (new)
   isin           String?             // ISIN code — mutual funds, bonds
   folioNumber    String?             // MF folio number
   broker         String?             // Zerodha, Groww, Kuvera, etc.
@@ -151,8 +159,9 @@ model Investment {
   maturityDate   DateTime?           // FD, bond, RD maturity
   interestRate   Float?              // FD/bond interest rate %
   lockInDate     DateTime?           // ELSS, PPF lock-in end date
-  notes          String?
-  tags           String[]            @default([])
+  notes               String?
+  tags                String[]            @default([])
+  currentMarketValue  Float?              // Real estate / manually-updated current value
 
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
@@ -168,12 +177,13 @@ model Investment {
   @@index([goalId])
 }
 
+// ── Cash flows for XIRR ────────────────────────────────────────────────────────
 
 model InvestmentCashFlow {
   id           String       @id @default(cuid())
   investmentId String
   type         CashFlowType
-  amount       Float       
+  amount       Float        // Negative = outflow (buy), Positive = inflow (sell/dividend)
   date         DateTime
   units        Float?
   price        Float?
@@ -184,7 +194,7 @@ model InvestmentCashFlow {
   @@index([investmentId, date])
 }
 
-
+// ── Financial Goals ────────────────────────────────────────────────────────────
 
 model FinancialGoal {
   id            String        @id @default(cuid())
@@ -203,6 +213,7 @@ model FinancialGoal {
   @@index([userId])
 }
 
+// ── Tax events ─────────────────────────────────────────────────────────────────
 
 model TaxEvent {
   id             String     @id @default(cuid())
@@ -223,6 +234,7 @@ model TaxEvent {
   @@index([userId, financialYear])
 }
 
+// ── Existing unchanged models ──────────────────────────────────────────────────
 
 model SystemEvent {
   id        String   @id @default(cuid())
