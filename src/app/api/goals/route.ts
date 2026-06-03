@@ -34,12 +34,12 @@ export async function GET() {
   const enriched = goals.map((goal: GoalWithInvestments) => {
     // Sum invested across linked investments
     const totalInvested = goal.investments.reduce(
-      (s, inv) => s + inv.avgBuyPrice * inv.sharesOwned,
+      (s:number , inv) => s + inv.avgBuyPrice * inv.sharesOwned,
       0
     );
 
     // Sum current value (use currentMarketValue if set, else cost basis)
-    const currentValue = goal.investments.reduce((s, inv) => {
+    const currentValue = goal.investments.reduce((s:number, inv) => {
       const val = inv.currentMarketValue ?? inv.avgBuyPrice * inv.sharesOwned;
       return s + val;
     }, 0);
