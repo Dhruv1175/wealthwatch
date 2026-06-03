@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
+import Prisma from "@prisma/client";
 
 // DELETE Path: Hard deletion (Remove completely from tracking logs)
 export async function DELETE(
@@ -75,7 +76,7 @@ export async function PATCH(
     const remainingShares = targetAsset.sharesOwned - parsedShares;
 
     // 3. Execute atomic relational updates securely
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx:Parameters<Parameters<typeof prisma.$transaction>[0]>[0]) => {
       if (remainingShares === 0) {
         await tx.investment.delete({ where: { id: assetId } });
       } else {
