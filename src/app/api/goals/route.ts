@@ -12,6 +12,7 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  
 
   const goals = await prisma.financialGoal.findMany({
     where:   { userId: session.user.id },
@@ -28,9 +29,9 @@ export async function GET() {
       },
     },
   });
-
+  type GoalWithInvestments = (typeof goals)[number];
   // Enrich each goal with computed progress
-  const enriched = goals.map((goal) => {
+  const enriched = goals.map((goal: GoalWithInvestments) => {
     // Sum invested across linked investments
     const totalInvested = goal.investments.reduce(
       (s, inv) => s + inv.avgBuyPrice * inv.sharesOwned,
