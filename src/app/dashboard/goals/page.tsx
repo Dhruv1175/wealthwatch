@@ -437,7 +437,6 @@ function GoalCard({
           </div>
         )}
       </div>
-     
     </div>
   );
 }
@@ -584,8 +583,6 @@ export default function GoalsPage() {
   const [allInvestments,  setAllInvestments]  = useState<AllInvestment[]>([]);
   const [loading,         setLoading]         = useState(true);
   const { triggerToast } = useNotifications();
-  const unlinked = useMemo(() => allInvestments.filter((inv) => !inv.goalId), [allInvestments]);
-  const unlinkedValue = useMemo(() => unlinked.reduce((s:number, inv:(typeof unlinked)[number]) => s + (inv.currentMarketValue ?? inv.avgBuyPrice * inv.sharesOwned), 0), [unlinked]);
 
   async function load() {
     try {
@@ -686,32 +683,12 @@ export default function GoalsPage() {
                 className="rounded-2xl p-5 flex items-start gap-4"
                 style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--info) / 0.2)" }}
               >
-                
                 <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "hsl(var(--info))" }} />
                 <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--foreground-tertiary))" }}>
                   To link investments to a goal, go to the Portfolio section and select a goal when adding a new position.
                   Projections use compound interest at the rate you set. Actual returns may vary.
                 </p>
               </div>
-               {unlinked.length > 0 && (
-        <div
-          className="rounded-2xl p-4 flex items-start gap-4 col-span-2 md:col-span-4"
-          style={{ background: "hsl(var(--warning-dim))", border: "1px solid hsl(var(--warning) / 0.25)" }}
-        >
-          <BarChart3 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "hsl(var(--warning))" }} />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold" style={{ color: "hsl(var(--warning))" }}>
-              {unlinked.length} investment{unlinked.length > 1 ? "s" : ""} not linked to any goal
-              · {formatCurrency(unlinkedValue, "INR", { compact: true })} untracked
-            </p>
-            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "hsl(var(--foreground-tertiary))" }}>
-              {unlinked.slice(0, 3).map((inv) => inv.name).join(", ")}
-              {unlinked.length > 3 ? ` and ${unlinked.length - 3} more` : ""}
-              . To link them, edit the position in Portfolio and select a goal.
-            </p>
-          </div>
-        </div>
-      )}
             </>
           )}
         </main>

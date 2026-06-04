@@ -20,7 +20,14 @@ import {
 interface PageProps {
   searchParams: Promise<{ timeframe?: string }>;
 }
-
+interface RecentTransactionItem {
+  id: string;
+  userId: string;
+  amount: number;
+  description: string;
+  category: string | null;
+  date: Date;
+}
 export default async function Dashboard({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user?.id) redirect("/");
@@ -28,7 +35,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const timeframe = resolvedParams.timeframe || "month";
 
-  const [recentTransactions, totalTransactionCount, totalInvestmentsCount, user] =
+  const [recentTransactions, totalTransactionCount, totalInvestmentsCount, user,goals] =
     await Promise.all([
       prisma.transaction.findMany({
         where:   { userId: session.user.id },
@@ -41,6 +48,11 @@ export default async function Dashboard({ searchParams }: PageProps) {
         where:  { id: session.user.id },
         select: { tier: true, name: true, email: true, image: true },
       }),
+      prisma.financialGoal.findMany({
+            where:   { userId: session.user.id },
+            select:  { id: true, name: true, category: true },
+            orderBy: { targetDate: "asc" },
+          })
     ]);
 
   const aggregateStats = {
@@ -271,7 +283,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
                   </div>
 
                   <div className="flex-1 overflow-y-auto">
-                    {recentTransactions.map((tx, i) => {
+                    {recentTransactions.map((tx: RecentTransactionItem, i) => {
                       const positive = tx.amount >= 0;
                       return (
                         <div
@@ -368,6 +380,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
           {/* Investment Manager */}
           <InvestmentManager
             totalInvestmentsCount={totalInvestmentsCount}
+            availableGoals={goals}
             sessionUser={{
               id:    session.user.id,
               name:  session.user?.name,

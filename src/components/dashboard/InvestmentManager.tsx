@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import Link from "next/link";
 import {
   Plus, TrendingUp, TrendingDown, Trash2, LineChart,
   X, DollarSign, Lock, Loader2, Bell, BarChart3,
@@ -90,6 +91,7 @@ interface PortfolioData {
 interface InvestmentManagerProps {
   totalInvestmentsCount?: number;
   sessionUser?: { id: string; name?: string | null; email?: string | null; image?: string | null };
+  availableGoals?: { id: string; name: string; category: string }[];
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -870,7 +872,7 @@ function OtherFields({ f, set }: { f: Record<string,string>; set: (k: string, v:
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
-export default function InvestmentManager({ totalInvestmentsCount = 0, sessionUser }: InvestmentManagerProps) {
+export default function InvestmentManager({ totalInvestmentsCount = 0, sessionUser, availableGoals = [] }: InvestmentManagerProps) {
   const [data, setData]             = useState<PortfolioData | null>(null);
   const [loading, setLoading]       = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -1201,11 +1203,43 @@ export default function InvestmentManager({ totalInvestmentsCount = 0, sessionUs
             {/* Live calculation preview */}
             {livePreview && <LivePreviewCard preview={livePreview} currency={form.currency ?? "INR"} />}
 
+            {/* Goal selector */}
+            {availableGoals.length > 0 && (
+              <div style={{ borderTop: "1px solid hsl(var(--border-token))", paddingTop: "12px" }}>
+                <label className="label-xs block mb-1.5">
+                  Link to Goal
+                  <span className="ml-1.5 normal-case" style={{ color: "hsl(var(--foreground-tertiary))", fontSize: "9px" }}>
+                    (optional — tracks toward a financial goal)
+                  </span>
+                </label>
+                <select
+                  className="field"
+                  value={form.goalId ?? ""}
+                  onChange={(e) => setField("goalId", e.target.value)}
+                >
+                  <option value="">No goal</option>
+                  {availableGoals.map((g) => (
+                    <option key={g.id} value={g.id}>{g.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {availableGoals.length === 0 && (
+              <div style={{ borderTop: "1px solid hsl(var(--border-token))", paddingTop: "12px" }}>
+                <p className="text-xs" style={{ color: "hsl(var(--foreground-tertiary))" }}>
+                  <Link href="/dashboard/goals" className="font-semibold" style={{ color: "hsl(var(--info))" }}>
+                    Create a goal
+                  </Link>
+                  {" "}to track this investment toward a target.
+                </p>
+              </div>
+            )}
+
             {/* Notes */}
             <div>
               <button type="button" onClick={() => setShowNotes((v) => !v)}
                 className="flex items-center gap-1.5 text-xs w-full transition-colors"
-                style={{ color: "hsl(var(--foreground-tertiary))", borderTop: "1px solid hsl(var(--border-token))", paddingTop: "12px" }}>
+                style={{ color: "hsl(var(--foreground-tertiary))" }}>
                 {showNotes ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                 Notes {showNotes ? "(hide)" : "(optional)"}
               </button>
@@ -1296,6 +1330,9 @@ export default function InvestmentManager({ totalInvestmentsCount = 0, sessionUs
                                 {pos.broker && <span className="badge-muted text-[9px]">{pos.broker}</span>}
                                 {cur !== "INR" && (
                                   <span className="badge-info text-[9px]">{cur} ({sym})</span>
+                                )}
+                                {pos.goal && (
+                                  <span className="badge-premium text-[9px]">🎯 {pos.goal.name}</span>
                                 )}
                               </div>
                               <p className="text-xs truncate max-w-[160px]" style={{ color: "hsl(var(--foreground-tertiary))" }}>
