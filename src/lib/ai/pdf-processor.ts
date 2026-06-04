@@ -118,7 +118,7 @@ export async function processStatementPipeline(
   });
 
   const existingSet = new Set(
-    existingTx.map((t) =>
+    existingTx.map((t: { date: Date; amount: number; description: string }) =>
       buildHash(t.description, t.amount, t.date.toISOString().split("T")[0])
     )
   );
@@ -167,10 +167,10 @@ export async function processStatementPipeline(
     };
   }
 
-  const lowConfidence = toInsert.filter((tx) => tx.confidence < 0.7).length;
+  const lowConfidence = toInsert.filter((tx: RawTransaction) => tx.confidence < 0.7).length;
 
   await prisma.transaction.createMany({
-    data: toInsert.map((tx) => ({
+    data: toInsert.map((tx:RawTransaction) => ({
       userId,
       amount:      tx.amount,
       description: tx.description,

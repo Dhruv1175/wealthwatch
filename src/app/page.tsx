@@ -461,6 +461,7 @@ export default async function Home() {
               OR
             </div>
             <form action={async (formData) => {
+              "use server";
   await registerWithCredentials(formData);
 }} >
               <input

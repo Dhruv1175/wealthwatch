@@ -22,6 +22,15 @@ interface TrendNode {
   earned: number;
 }
 
+interface AnalyticsTransaction {
+  id: string;
+  category: string | null;
+  date: Date;
+  userId: string;
+  amount: number;
+  description: string;
+}
+
 interface AdvancedAnalysisReport {
   timeframe: Timeframe;
   totalCredit: number;
@@ -83,7 +92,10 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
     const totalDebit = Math.abs(debitAggregation._sum.amount || 0);
     const burnRatePercentage = totalCredit > 0 ? (totalDebit / totalCredit) * 100 : 100;
 
-    const categoryBreakdown = categoryGroupings.map((group) => ({
+    const categoryBreakdown = categoryGroupings.map((group:{
+  category: string | null;
+  _sum: { amount: number | null };
+}) => ({
       name: group.category || "UNASSIGNED",
       value: parseFloat(Math.abs(group._sum.amount || 0).toFixed(2)),
     }));
@@ -91,7 +103,7 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
     const allDebits: number[] = [];
     const trendMap: Record<string, { spent: number; earned: number }> = {};
 
-    transactions.forEach((tx) => {
+    transactions.forEach((tx: AnalyticsTransaction) => {
       if (tx.amount < 0) allDebits.push(Math.abs(tx.amount));
 
       let label = "";
@@ -121,7 +133,7 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
       const iqr = q3 - q1;
       const outlierThreshold = q3 + 1.5 * iqr;
 
-      transactions.forEach((tx) => {
+      transactions.forEach((tx: AnalyticsTransaction) => {
         if (tx.amount < 0 && Math.abs(tx.amount) > outlierThreshold) {
           outliers.push({
             id: tx.id,
@@ -134,7 +146,7 @@ export async function generateAdvancedSummary(userId: string, timeframe: Timefra
       });
     }
 
-    const trendData: TrendNode[] = Object.entries(trendMap).map(([label, data]) => ({
+    const trendData: TrendNode[] = Object.entries(trendMap).map(([label, data]:[string, { spent: number; earned: number }]) => ({
       label,
       spent: parseFloat(data.spent.toFixed(2)),
       earned: parseFloat(data.earned.toFixed(2)),

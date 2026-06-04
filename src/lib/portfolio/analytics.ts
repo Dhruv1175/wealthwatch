@@ -19,7 +19,7 @@ export function calculateXIRR(cashFlows: CashFlow[]): number | null {
 
   // NPV function: sum of amount / (1 + rate)^(days/365)
   function npv(rate: number): number {
-    return cashFlows.reduce((sum, cf) => {
+    return cashFlows.reduce((sum:number, cf:CashFlow) => {
       const days = (cf.date.getTime() - baseDate) / (1000 * 60 * 60 * 24);
       return sum + cf.amount / Math.pow(1 + rate, days / DAYS_YEAR);
     }, 0);
@@ -27,7 +27,7 @@ export function calculateXIRR(cashFlows: CashFlow[]): number | null {
 
   // NPV derivative for Newton-Raphson
   function npvDerivative(rate: number): number {
-    return cashFlows.reduce((sum, cf) => {
+    return cashFlows.reduce((sum:number, cf:CashFlow) => {
       const days = (cf.date.getTime() - baseDate) / (1000 * 60 * 60 * 24);
       const t    = days / DAYS_YEAR;
       return sum - (t * cf.amount) / Math.pow(1 + rate, t + 1);
@@ -80,7 +80,7 @@ export function analyzeAllocation(
     currency?:    string;
   }[]
 ): AllocationBreakdown {
-  const total = positions.reduce((s, p) => s + p.currentValue, 0);
+  const total = positions.reduce((s:number, p:{name: string;type: string;currentValue: number;currency?: string | undefined;}) => s + p.currentValue, 0);
   if (total === 0) return { byType: [], byCurrency: [], concentration: { topHolding: "", topHoldingWeight: 0, isConcentrated: false } };
 
   // By asset type
@@ -90,7 +90,7 @@ export function analyzeAllocation(
     typeMap[key] = (typeMap[key] ?? 0) + p.currentValue;
   }
   const byType = Object.entries(typeMap)
-    .map(([label, value]) => ({ label, value, percentage: parseFloat(((value / total) * 100).toFixed(1)) }))
+    .map(([label, value]:[string, number]) => ({ label, value, percentage: parseFloat(((value / total) * 100).toFixed(1)) }))
     .sort((a, b) => b.value - a.value);
 
   // By currency
@@ -100,7 +100,7 @@ export function analyzeAllocation(
     currencyMap[key] = (currencyMap[key] ?? 0) + p.currentValue;
   }
   const byCurrency = Object.entries(currencyMap)
-    .map(([label, value]) => ({ label, value, percentage: parseFloat(((value / total) * 100).toFixed(1)) }))
+    .map(([label, value]:[string, number]) => ({ label, value, percentage: parseFloat(((value / total) * 100).toFixed(1)) }))
     .sort((a, b) => b.value - a.value);
 
   // Concentration risk
@@ -147,7 +147,7 @@ export function calculateHealthScore(params: {
   let consistency     = 0;
 
   // ── Diversification (0–25) ────────────────────────────────────────────────
-  const uniqueTypes = new Set(positions.map((p) => p.type)).size;
+  const uniqueTypes = new Set(positions.map((p: { type: string; currentValue: number; name: string }) => p.type)).size;
   diversification   = Math.min(25, uniqueTypes * 5);
   if (positions.length < 3) flags.push("Portfolio has fewer than 3 positions — consider diversifying.");
   if (uniqueTypes === 1)    flags.push("All assets are in one asset class — concentration risk.");
@@ -168,7 +168,7 @@ export function calculateHealthScore(params: {
   }
 
   // ── Risk balance (0–25) ───────────────────────────────────────────────────
-  const total      = positions.reduce((s, p) => s + p.currentValue, 0);
+  const total      = positions.reduce((s:number, p:{type: string;currentValue: number;name: string;}) => s + p.currentValue, 0);
   const maxWeight  = total > 0
     ? Math.max(...positions.map((p) => (p.currentValue / total) * 100))
     : 0;

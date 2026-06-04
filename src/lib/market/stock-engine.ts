@@ -7,7 +7,7 @@ export interface AssetPosition {
   id: string;
   symbol: string;
   name: string;
-  type: "EQUITY_STOCK" | "SIP_MUTUAL_FUND";
+  type: "EQUITY_STOCK" | "SIP_MUTUAL_FUND" ;
   sharesOwned: number;
   avgBuyPrice: number;
   currentPrice: number;
@@ -134,7 +134,7 @@ export async function getMacroCommodities(): Promise<{ commodities: CommodityPos
     // Live translation multiplier fallback anchor if network state dips
     const usdInrRate = forexQuote?.regularMarketPrice || 83.50; 
 
-    const commodities = targets.map((target, index) => {
+    const commodities = targets.map((target, index:number) => {
       const quote = commodityQuotes[index];
       const priceUSD = quote?.regularMarketPrice || quote?.regularMarketPreviousClose || 0;
       const changeUSD = quote?.regularMarketChange || 0;
