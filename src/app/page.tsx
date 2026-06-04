@@ -460,7 +460,9 @@ export default async function Home() {
             <div className="flex items-center gap-3 text-[11px] text-gray-600 font-mono before:flex-1 before:h-px before:bg-white/10 after:flex-1 after:h-px after:bg-white/10">
               OR
             </div>
-            <form action={registerWithCredentials} >
+            <form action={async (formData) => {
+  await registerWithCredentials(formData);
+}} >
               <input
               type="text"
               name="name"
