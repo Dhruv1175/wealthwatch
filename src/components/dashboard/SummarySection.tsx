@@ -187,7 +187,7 @@ export default async function SummarySection({ searchParams }: SummarySectionPro
       <Suspense
         fallback={
           <div className="space-y-3 py-2">
-            {[100, 85, 70, 55].map((w) => (
+            {[100, 85, 70, 55].map((w:number) => (
               <div key={w} className="skeleton h-3 rounded" style={{ width: `${w}%` }} />
             ))}
           </div>

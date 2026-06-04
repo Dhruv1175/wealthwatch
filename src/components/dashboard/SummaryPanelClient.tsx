@@ -227,7 +227,7 @@ export default function SummaryPanelClient({
                 <Tooltip
                   contentStyle={TOOLTIP_STYLE}
                   cursor={{ fill: "hsl(220 15% 14% / 0.6)", radius: 6 }}
-                  formatter={(val: number) => [`₹${val.toLocaleString("en-IN")}`, undefined]}
+                  formatter={(val: any) => [`₹${val.toLocaleString("en-IN")}`, undefined]}
                 />
                 <Bar dataKey="earned" name="Income"   fill="hsl(var(--positive))" radius={[4,4,0,0]} maxBarSize={32} />
                 <Bar dataKey="spent"  name="Expenses" fill="hsl(var(--negative))" radius={[4,4,0,0]} maxBarSize={32} />
@@ -261,7 +261,7 @@ export default function SummaryPanelClient({
                 </Pie>
                 <Tooltip
                   contentStyle={TOOLTIP_STYLE}
-                  formatter={(val: number) => [`₹${val.toLocaleString("en-IN")}`, undefined]}
+                  formatter={(val: any) => [`₹${val.toLocaleString("en-IN")}`, undefined]}
                 />
               </PieChart>
             </ResponsiveContainer>
