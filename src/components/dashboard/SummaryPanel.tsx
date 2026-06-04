@@ -60,7 +60,7 @@ export default function SummaryPanel() {
           <h2 className="text-sm font-mono font-bold tracking-wider uppercase text-gray-300">Financial Analytics Core</h2>
         </div>
         <div className="flex bg-zinc-950 border border-white/5 p-1 rounded font-mono text-xs">
-          {(["week", "month", "year"] as Timeframe[]).map((t) => (
+          {(["week", "month", "year"] as Timeframe[]).map((t:Timeframe) => (
             <button
               key={t}
               onClick={() => setTimeframe(t)}
@@ -150,7 +150,7 @@ export default function SummaryPanel() {
               </div>
               {/* Legend Meta List View */}
               <div className="max-h-24 overflow-y-auto space-y-1 font-mono text-[10px] mt-2 pr-1">
-                {report.categoryBreakdown.map((item, idx) => (
+                {report.categoryBreakdown.map((item:{name: string;value: number;}, idx:number) => (
                   <div key={item.name} className="flex justify-between items-center text-gray-400">
                     <div className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLORS[idx % BRAND_COLORS.length] }} />
@@ -173,7 +173,7 @@ export default function SummaryPanel() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-40 overflow-y-auto pr-1">
-                {report.outliers.map((out) => (
+                {report.outliers.map((out:{id: string;date: string;description: string;amount: number;reason: string;}) => (
                   <div key={out.id} className="bg-black border border-amber-900/30 p-3 font-mono text-xs flex justify-between items-start gap-4">
                     <div>
                       <div className="text-gray-200 font-medium truncate max-w-[200px]">{out.description}</div>
@@ -195,7 +195,7 @@ export default function SummaryPanel() {
               </h3>
             </div>
             <div className="text-sm text-gray-300 leading-relaxed font-normal space-y-4 prose prose-invert max-w-none">
-              {report.deepAdvice.split("\n\n").map((paragraph, idx) => {
+              {report.deepAdvice.split("\n\n").map((paragraph:string, idx:number) => {
                 if (paragraph.startsWith("###")) {
                   return <h4 key={idx} className="text-xs font-mono font-bold uppercase tracking-widest text-sky-400 mt-4 mb-2">{paragraph.replace("###", "").trim()}</h4>;
                 }

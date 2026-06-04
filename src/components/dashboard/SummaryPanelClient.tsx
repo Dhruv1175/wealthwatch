@@ -64,7 +64,7 @@ export default function SummaryPanelClient({
           className="flex rounded-xl p-1 gap-1"
           style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border))" }}
         >
-          {["week", "month", "year"].map((tf) => (
+          {["week", "month", "year"].map((tf:string) => (
             <button
               key={tf}
               onClick={() => setTimeframe(tf)}
@@ -267,7 +267,7 @@ export default function SummaryPanelClient({
             </ResponsiveContainer>
           </div>
           <div className="space-y-1.5 max-h-28 overflow-y-auto mt-2">
-            {r.categoryBreakdown.slice(0, 6).map((item: any, i: number) => (
+            {r.categoryBreakdown.slice(0, 6).map((item:any, i: number) => (
               <div key={item.name} className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span

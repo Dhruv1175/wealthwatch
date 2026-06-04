@@ -11,12 +11,39 @@ interface StreamingAdviceProps {
   };
   userId: string;
 }
+interface ActiveInvestmentItem {
+  symbol: string;
+  userId: string;
+  name: string;
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  type: any; // handles your custom $Enums.InvestmentType seamlessly
+  portfolioId: string | null;
+  goalId: string | null;
+  sharesOwned: number;
+  avgBuyPrice: number;
+  sipAmount: number | null;
+  sipDay: number | null;
+  isin: string | null;
+  folioNumber: string | null;
+  broker: string | null;
+  currency: string;
+  exchange: string | null;
+  sector: string | null;
+  maturityDate: Date | null;
+  interestRate: number | null;
+  lockInDate: Date | null;
+  notes: string | null;
+  tags: string[];
+  currentMarketValue: number | null;
+}
 
 export default async function StreamingAdviceCard({ report, userId }: StreamingAdviceProps) {
   // Pull holdings concurrently on the server
   const activeInvestments = await prisma.investment.findMany({ where: { userId } });
   
-  const formattedInvestments = activeInvestments.map(i => ({
+  const formattedInvestments = activeInvestments.map((i:ActiveInvestmentItem) => ({
     symbol: i.symbol,
     name: i.name,
     type: i.type,
@@ -35,7 +62,7 @@ export default async function StreamingAdviceCard({ report, userId }: StreamingA
 
   return (
     <div className="text-sm text-gray-300 space-y-4 font-sans leading-relaxed">
-      {adviceText.split("\n\n").map((paragraph, idx) => {
+      {adviceText.split("\n\n").map((paragraph:string, idx:number) => {
         if (paragraph.startsWith("###")) {
           return (
             <h4 key={idx} className="text-xs font-mono font-bold uppercase tracking-widest text-sky-400 mt-4 mb-2 border-l-2 border-sky-500 pl-2">
