@@ -34,7 +34,7 @@ const getActiveIconColor = (label: string): string | undefined => {
     case "Transactions":
       return "hsl(var(--positive))";    // green
     case "Goals":
-      return "hsl(var(--accent))";      // purple
+      return "hsl(var(--negative))";      // purple
     case "Billing":
       return "hsl(var(--premium))";     // warm yellow / gold
     case "Settings":

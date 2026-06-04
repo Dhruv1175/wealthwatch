@@ -12,7 +12,6 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  
 
   const goals = await prisma.financialGoal.findMany({
     where:   { userId: session.user.id },
@@ -29,18 +28,23 @@ export async function GET() {
       },
     },
   });
+
   type GoalWithInvestments = (typeof goals)[number];
+
   // Enrich each goal with computed progress
   const enriched = goals.map((goal: GoalWithInvestments) => {
     // Sum invested across linked investments
     const totalInvested = goal.investments.reduce(
-      (s:number , inv:(typeof goal.investments)[number]) => s + inv.avgBuyPrice * inv.sharesOwned,
+      (s:number, inv:(typeof goal.investments)[number]) => s + inv.avgBuyPrice * inv.sharesOwned,
       0
     );
 
     // Sum current value (use currentMarketValue if set, else cost basis)
     const currentValue = goal.investments.reduce((s:number, inv:(typeof goal.investments)[number]) => {
-      const val = inv.currentMarketValue ?? inv.avgBuyPrice * inv.sharesOwned;
+      const val =
+        (inv.currentMarketValue !== null && inv.currentMarketValue !== undefined)
+          ? inv.currentMarketValue
+          : inv.avgBuyPrice * inv.sharesOwned;
       return s + val;
     }, 0);
 
@@ -63,7 +67,19 @@ export async function GET() {
     };
   });
 
-  return NextResponse.json(enriched);
+  // Also return all investments (linked and unlinked) so the UI can
+  // let users manually associate existing investments with goals
+  const allInvestments = await prisma.investment.findMany({
+    where:   { userId: session.user.id },
+    select: {
+      id: true, name: true, type: true, goalId: true,
+      sharesOwned: true, avgBuyPrice: true,
+      currentMarketValue: true, sipAmount: true,
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  return NextResponse.json({ goals: enriched, allInvestments });
 }
 
 // ── POST ───────────────────────────────────────────────────────────────────────

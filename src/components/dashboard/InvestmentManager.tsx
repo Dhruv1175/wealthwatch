@@ -72,6 +72,7 @@ interface Position {
   notes: string | null; tags: string[];
   createdAt: string;
   updatedAt: string;
+  currentMarketValue: number | null;  // Real estate: user-entered current value from DB
   portfolio: { id: string; name: string; color: string | null } | null;
   goal: { id: string; name: string; targetAmount: number } | null;
 }
@@ -184,16 +185,20 @@ function computePositionReturns(pos: Position, goldPriceOverride?: number): {
       pnlPct:         parseFloat(pnlPct.toFixed(2)),
       maturityValue:  pos.maturityDate ? currentVal * 1.02 : null, // rough SGB projection
       label:          goldForm === "SGB" ? "Appreciation + Interest" : "Appreciation",
-      isProjection:   pos.currentPrice === pos.avgBuyPrice, // projection if no live price
+      isProjection:   !pos.currentMarketValue && pos.currentPrice === pos.avgBuyPrice, // projection if no live price
     };
   }
 
   // ── Real estate — cost basis vs user-entered current value ───────────────────
   if (shape === "realestate") {
     const invested   = pos.avgBuyPrice * pos.sharesOwned;
-    const currentVal = pos.currentPrice > 0 && pos.currentPrice !== pos.avgBuyPrice
-      ? pos.currentPrice
-      : invested;
+    // Priority: DB-stored currentMarketValue (user entered) > Yahoo price > cost basis
+    const currentVal =
+      pos.currentMarketValue && pos.currentMarketValue !== invested
+        ? pos.currentMarketValue
+        : pos.currentPrice > 0 && pos.currentPrice !== pos.avgBuyPrice
+        ? pos.currentPrice
+        : invested;
     const profit     = currentVal - invested;
     const pnlPct     = invested > 0 ? (profit / invested) * 100 : 0;
     const rentalNote = pos.sipAmount
@@ -206,7 +211,7 @@ function computePositionReturns(pos: Position, goldPriceOverride?: number): {
       pnlPct:         parseFloat(pnlPct.toFixed(2)),
       maturityValue:  null,
       label:          "Appreciation",
-      isProjection:   pos.currentPrice === pos.avgBuyPrice,
+      isProjection:   !pos.currentMarketValue && pos.currentPrice === pos.avgBuyPrice,
       breakdown:      rentalNote,
     };
   }
