@@ -17,6 +17,13 @@ interface FinancialAdvicePanelProps {
   };
   userId: string;
 }
+interface InvestmentInput {
+  symbol: string;
+  name: string;
+  type: any; // or your generated $Enums.InvestmentType if imported
+  sharesOwned: number;
+  avgBuyPrice: number;
+}
 
 export default async function FinancialAdvicePanel({
   report,
@@ -36,7 +43,7 @@ export default async function FinancialAdvicePanel({
 
   const isPro = user?.tier === "PRO";
 
-  const formattedInvestments = investments.map((i) => ({
+  const formattedInvestments = investments.map((i: InvestmentInput) => ({
     symbol:    i.symbol,
     name:      i.name,
     type:      i.type,
@@ -76,7 +83,7 @@ export default async function FinancialAdvicePanel({
 
       {/* AI advice content */}
       <div className="space-y-4 text-sm leading-relaxed font-sans">
-        {adviceText.split("\n\n").map((paragraph, idx) => {
+        {adviceText.split("\n\n").map((paragraph:string, idx:number) => {
           if (paragraph.startsWith("###")) {
             const title = paragraph.replace(/^###\s*/, "").trim();
             return (
@@ -126,7 +133,7 @@ function AdditionalSuggestionsBox({ isPro }: { isPro: boolean }) {
         </p>
       </div>
       <ul className="space-y-2">
-        {GROWTH_TIPS.map((tip) => (
+        {GROWTH_TIPS.map((tip:{ title: string; description: string}) => (
           <li key={tip.title} className="flex items-start gap-2.5">
             <span
               className="text-xs mt-0.5 shrink-0 font-bold"
