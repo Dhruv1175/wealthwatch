@@ -4,7 +4,12 @@ interface CashFlow {
   date:   Date;
   amount: number;
 }
-
+interface PortfolioPosition {
+  name: string;
+  type: string;
+  currentValue: number;
+  currency?: string;
+}
 export function calculateXIRR(cashFlows: CashFlow[]): number | null {
   if (cashFlows.length < 2) return null;
 
@@ -73,14 +78,10 @@ export interface AllocationBreakdown {
 }
 
 export function analyzeAllocation(
-  positions: {
-    name:         string;
-    type:         string;
-    currentValue: number;
-    currency?:    string;
-  }[]
+  positions: PortfolioPosition[]
+
 ): AllocationBreakdown {
-  const total = positions.reduce((s:number, p:{name: string;type: string;currentValue: number;currency?: string | undefined;}) => s + p.currentValue, 0);
+  const total = positions.reduce((s:number, p: PortfolioPosition) => s + p.currentValue, 0);
   if (total === 0) return { byType: [], byCurrency: [], concentration: { topHolding: "", topHoldingWeight: 0, isConcentrated: false } };
 
   // By asset type
@@ -134,7 +135,7 @@ export interface HealthScore {
 }
 
 export function calculateHealthScore(params: {
-  positions:   { type: string; currentValue: number; name: string }[];
+  positions:   PortfolioPosition[];
   xirr:        number | null;
   totalPnl:    number;
   totalCost:   number;
@@ -147,7 +148,7 @@ export function calculateHealthScore(params: {
   let consistency     = 0;
 
   // ── Diversification (0–25) ────────────────────────────────────────────────
-  const uniqueTypes = new Set(positions.map((p: { type: string; currentValue: number; name: string }) => p.type)).size;
+  const uniqueTypes = new Set(positions.map((p: PortfolioPosition) => p.type)).size;
   diversification   = Math.min(25, uniqueTypes * 5);
   if (positions.length < 3) flags.push("Portfolio has fewer than 3 positions — consider diversifying.");
   if (uniqueTypes === 1)    flags.push("All assets are in one asset class — concentration risk.");
@@ -168,7 +169,7 @@ export function calculateHealthScore(params: {
   }
 
   // ── Risk balance (0–25) ───────────────────────────────────────────────────
-  const total      = positions.reduce((s:number, p:{type: string;currentValue: number;name: string;}) => s + p.currentValue, 0);
+  const total      = positions.reduce((s:number, p: PortfolioPosition) => s + p.currentValue, 0);
   const maxWeight  = total > 0
     ? Math.max(...positions.map((p) => (p.currentValue / total) * 100))
     : 0;
