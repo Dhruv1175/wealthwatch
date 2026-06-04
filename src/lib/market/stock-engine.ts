@@ -7,7 +7,7 @@ export interface AssetPosition {
   id: string;
   symbol: string;
   name: string;
-  type: "EQUITY_STOCK" | "SIP_MUTUAL_FUND" ;
+  type: string ;
   sharesOwned: number;
   avgBuyPrice: number;
   currentPrice: number;
@@ -40,12 +40,12 @@ export async function getTrackedInvestments(userId: string): Promise<{ positions
   const sipReminders: string[] = [];
   let totalValue = 0;
   let totalPnl = 0;
-
+  type DynamicAssetType = (typeof investments)[number];
   await Promise.all(
-    investments.map(async (asset) => {
+    investments.map(async (asset: DynamicAssetType) => {
       try {
         // Query the free live price feed matrix
-        const quote = await yahooFinance.quote(asset.symbol);
+        const quote = await yahooFinance.quote(asset.symbol) as any;
         
         // DEFENSIVE CHECK: Fallback to avgBuyPrice if Yahoo returns undefined for the ticker
         let currentPrice = asset.avgBuyPrice;
@@ -55,7 +55,7 @@ export async function getTrackedInvestments(userId: string): Promise<{ positions
           // Direct equities (.NS) use 'regularMarketPrice' or 'regularMarketPreviousClose' during weekends/holidays
           currentPrice = 
             quote.regularMarketPrice || 
-            (quote as any).nav || 
+            quote.nav || 
             quote.regularMarketPreviousClose || 
             asset.avgBuyPrice;
         } else {
@@ -169,7 +169,7 @@ export async function getPortfolioNews(symbols: string[]): Promise<NewsNode[]> {
     // Querying the primary holding ticker returns a clean news array payload
     const data = await yahooFinance.search(symbols[0], { newsCount: 4 },{
       validateResult:false
-    });
+    }) as any;
     
     return (data.news || []).map((item: any) => ({
       title: item.title,
