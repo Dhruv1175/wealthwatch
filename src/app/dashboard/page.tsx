@@ -283,7 +283,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
                   </div>
 
                   <div className="flex-1 overflow-y-auto">
-                    {recentTransactions.map((tx: RecentTransactionItem, i) => {
+                    {recentTransactions.map((tx: RecentTransactionItem, i:number) => {
                       const positive = tx.amount >= 0;
                       return (
                         <div
