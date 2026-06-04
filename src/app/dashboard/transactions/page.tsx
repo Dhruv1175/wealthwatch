@@ -17,6 +17,14 @@ const PAGE_SIZE        = 20;
 interface PageProps {
   searchParams: Promise<{ page?: string; category?: string }>;
 }
+interface TransactionItem {
+  id: string;
+  userId: string;
+  amount: number;
+  description: string;
+  category: string | null;
+  date: Date;
+}
 
 export default async function TransactionsPage({ searchParams }: PageProps) {
   const session = await auth();
@@ -59,7 +67,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
       take:    BASIC_TX_LIMIT,
       select:  { id: true },
     });
-    const idSet = allowedIds.map((t) => t.id);
+    const idSet = allowedIds.map((t:{id:string}) => t.id);
     transactions = await prisma.transaction.findMany({
       where:   { ...where, id: { in: idSet } },
       orderBy: { date: "desc" },
@@ -75,8 +83,8 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
     });
   }
 
-  const totalIncome   = transactions.filter((t) => t.amount >= 0).reduce((s, t) => s + t.amount, 0);
-  const totalExpenses = transactions.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+  const totalIncome   = transactions.filter((t:TransactionItem) => t.amount >= 0).reduce((s:number, t:TransactionItem) => s + t.amount, 0);
+  const totalExpenses = transactions.filter((t:TransactionItem) => t.amount < 0).reduce((s:number, t:TransactionItem) => s + Math.abs(t.amount), 0);
 
   return (
     <div className="app-shell">
@@ -218,8 +226,8 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                   All
                 </Link>
                 {categories
-                  .filter((c) => c.category)
-                  .map((c) => (
+                  .filter((c:{ category: string | null }) => c.category)
+                  .map((c:{ category: string | null }) => (
                     <Link
                       key={c.category}
                       href={`/dashboard/transactions?category=${encodeURIComponent(c.category!)}`}
@@ -274,7 +282,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                     )}
                   </div>
                 ) : (
-                  transactions.map((tx, i) => {
+                  transactions.map((tx:TransactionItem, i:number) => {
                     const positive = tx.amount >= 0;
                     return (
                       <div
