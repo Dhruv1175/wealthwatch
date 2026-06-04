@@ -68,7 +68,7 @@ export function formatPnL(
   return `${sign}${sym}${abs}`;
 }
  
-// ── Percentage formatter ──────────────────────────────────────────────────────
+// ── Percentage formatter ────────────────────────────────────────────────────
 export function formatPct(value: number, decimals = 1): string {
   const sign = value >= 0 ? "+" : "";
   return `${sign}${value.toFixed(decimals)}%`;
