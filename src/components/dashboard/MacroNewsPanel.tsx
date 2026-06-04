@@ -1,6 +1,7 @@
 import { getPortfolioNews } from "@/lib/market/stock-engine";
 import prisma from "@/lib/db";
 import { Newspaper, ExternalLink, Radio } from "lucide-react";
+import {NewsNode} from "@/lib/market/stock-engine";
 
 interface MacroNewsPanelProps {
   userId: string;
@@ -13,7 +14,7 @@ export default async function MacroNewsPanel({ userId }: MacroNewsPanelProps) {
     take:   5,
   });
 
-  const tickers = userInvestments.map((i) => i.symbol);
+  const tickers = userInvestments.map((i:{ symbol: string }) => i.symbol);
   const news    = await getPortfolioNews(tickers);
 
   return (
@@ -51,7 +52,7 @@ export default async function MacroNewsPanel({ userId }: MacroNewsPanelProps) {
       {/* Ticker chips */}
       {tickers.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {tickers.map((t) => (
+          {tickers.map((t:string) => (
             <span key={t} className="badge-info text-[9px]">{t}</span>
           ))}
         </div>
@@ -73,7 +74,7 @@ export default async function MacroNewsPanel({ userId }: MacroNewsPanelProps) {
         </div>
       ) : (
         <div className="space-y-1.5 overflow-y-auto" style={{ maxHeight: "300px" }}>
-          {news.map((item, idx) => (
+          {news.map((item:NewsNode, idx:number) => (
             <div
               key={idx}
               className="rounded-xl p-3.5 transition-colors duration-150 news-item-hover"
