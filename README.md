@@ -1,129 +1,262 @@
-WealthWatch Core
+# WealthWatch
 
-WealthWatch is a type-safe personal finance dashboard and analytics engine built to provide high-density financial asset monitoring, real-time data streaming, and autonomous multi-asset wealth tracking. The platform features an integrated AI-driven bank statement PDF extraction engine alongside client-side usage guardrails tied to dynamic billing tiers.
+**Live:** [wealthwatch-ten.vercel.app](https://wealthwatch-ten.vercel.app)
 
-Architectural Architecture & Tech Stack
-Framework: Next.js 14 (App Router) utilizing progressive server-side rendering (SSR) streaming
+A full-stack personal finance and investment tracking platform built for Indian retail investors. Tracks equities, mutual funds, FDs, gold, crypto, PPF, EPF, NPS, real estate, and more — with AI-powered bank statement parsing, live market prices, XIRR calculations, portfolio health scoring, and goal-based financial planning.
 
-Language: TypeScript enforcing compile-time data integrity and full-stack type safety
+---
 
-Database ORM: Prisma Client linking directly to a transactional relational database instance
+## Tech Stack
 
-Styling Core: Tailwind CSS utilizing system-inherited semantic variables
+| Layer | Tech |
+|---|---|
+| Framework | Next.js 14 (App Router, Server Components) |
+| Language | TypeScript |
+| Styling | Tailwind CSS + custom CSS design system |
+| Database | PostgreSQL via Prisma ORM |
+| Auth | NextAuth.js (Google OAuth + credentials) |
+| AI | Groq (llama-3.3-70b) — PDF parsing, categorization, financial advice |
+| Market Data | Yahoo Finance (yahoo-finance2) |
+| Payments | Razorpay (Pro tier upgrade) |
+| File Uploads | Cloudinary (profile photos) |
+| Deployment | Vercel |
 
-Component System: Radix UI primitives / Shadcn UI integration layer
+---
 
-Payment Processing: Razorpay client-side SDK integrated with secure verification routes
+## Features
 
-Complete Project Workspace Mapping
-wealthwatch/
-├── prisma/
-│   └── schema.prisma              # Database schemas (User, Transaction, Investment, Logs)
-├── public/                        # Scalable vector graphics and branding static assets
-├── src/
-│   ├── actions/
-│   │   └── auth.ts                # Server Actions (Login, Sign-out execution closures)
-│   ├── api/
-│   │   ├── auth/                  # NextAuth credentials authentication handlers
-│   │   ├── dashboard/summary/     # Operational overview metric calculations
-│   │   ├── investments/           # Multi-asset CRUD API endpoints
-│   │   ├── payments/verify/       # Razorpay cryptographic token signature validation
-│   │   ├── transactions/upload/   # Secure file ingestion stream and engine routes
-│   │   ├── user/profile/          # Account preferences management routes
-│   │   └── webhooks/events/       # Secondary payment gateway event streams
-│   ├── app/
-│   │   ├── layout.tsx             # Root template wrapper and global style injection
-│   │   ├── page.tsx               # Primary guest landing page
-│   │   ├── login/page.tsx         # Account authentication viewport
-│   │   ├── register/page.tsx      # User onboarding viewport
-│   │   └── dashboard/
-│   │       ├── page.tsx           # Main Dashboard server canvas and column grid
-│   │       └── billing/page.tsx   # Subscription management and audit log ledger
-│   ├── components/dashboard/
-│   │   ├── AnalyticsSkeleton.tsx     # Monospace placeholder loading grids
-│   │   ├── InvestmentManager.tsx     # Portfolio grid displaying active tracking limits
-│   │   ├── MacroNewsPanel.tsx        # High-density global market ticker
-│   │   ├── NotificationContext.tsx   # Application-wide global toast dispatch system
-│   │   ├── RazorpayUpgradeButton.tsx # Polymorphic checkout button component
-│   │   ├── StreamingAdviceCard.tsx   # Asynchronous metric assessment container
-│   │   ├── SummaryPanel.tsx          # Presentation structure for aggregate balances
-│   │   ├── SummaryPanelClient.tsx    # Interactive client-side timeframe control bars
-│   │   ├── SummarySection.tsx        # Server-side parallel database query layer
-│   │   ├── TradingViewChart.tsx      # Integrated financial asset chart component
-│   │   ├── UploadForm.tsx            # Terminal-style document dropzone
-│   │   └── UserProfileDropdown.tsx   # Nav metadata and explicit telemetry records
-│   └── lib/
-│       ├── ai/
-│       │   ├── financial-analyzer.ts # Large Language Model reasoning loops
-│       │   └── pdf-processor.ts      # Unencrypted document statement data extractors
-│       ├── auth/
-│       │   └── tier-guard.ts         # Server-side route authorization verification middleware
-│       ├── db.ts                     # Singleton Prisma client instance
-│       └── market/
-│           └── stock-engine.ts       # Quantitative market tracking systems
-├── eslint.config.mjs                 # Strict static analysis configuration rules
-├── next.config.ts                    # Optimized framework compilation settings
-├── tailwind.config.ts                # Root styling configuration file
-└── tsconfig.json                     # Type compiler path definitions
+### Transaction Management
+- AI-powered PDF bank statement ingestion — extracts transactions from any digital e-statement using Groq
+- OCR fallback for scanned documents (tesseract.js + sharp)
+- Deduplication via SHA-256 content hash — re-uploading the same statement won't create duplicates
+- Confidence scoring — low-confidence extractions are flagged
+- Manual transaction entry with AI auto-categorization (single Groq call, 20 tokens max)
+- 15 categories: SALARY, INCOME, FOOD, HOUSING, UTILITIES, TRANSPORT, HEALTHCARE, ENTERTAINMENT, SHOPPING, EDUCATION, INSURANCE, SUBSCRIPTION, EMI, TAX, OTHER
+- Full paginated transactions page with category filters
+- BASIC tier: 50 transactions max · PRO tier: unlimited
 
-Component Interface Layout Specifications
-1. Main Dashboard Shell (src/app/dashboard/page.tsx)
-Acts as the central presentation canvas for the application. It executes asynchronous parallel data resolutions across core user transaction tables and investment tracking instances on the server before passing data down to child components. Maps components across a clean grid layout split into distinct workspace areas:
+### Portfolio Tracking
+Supports 15 asset types with completely separate add forms per type:
 
-Navigation Row: Mounts branding components along the leading margin and attaches the explicit user options dropdown component to the trailing edge.
+| Asset Type | Key Fields |
+|---|---|
+| Direct Equity / ETF / US Stock | Ticker, shares, avg buy price, exchange, sector, broker |
+| SIP / Mutual Fund | Fund name, monthly SIP amount, debit day, units accumulated, current NAV, folio, ISIN |
+| MF Lumpsum | Fund name, units purchased, purchase NAV, folio, ISIN |
+| Fixed Deposit | Bank name, principal, interest rate %, start date, maturity date |
+| Recurring Deposit | Bank name, monthly instalment, interest rate %, maturity date |
+| Bond / Debenture | Bond name, ISIN, units, purchase price, coupon rate, maturity date |
+| Gold (Physical) | Weight in grams, avg purchase price per gram |
+| Gold (SGB) | Units (1 = 1 gram), issue price, series name, maturity date |
+| Gold (ETF / MF) | Ticker, units, avg buy price |
+| Cryptocurrency | Coin name, ticker, quantity, avg buy price in ₹, exchange |
+| PPF | Bank/PO, current balance, annual contribution, account opened date, maturity date |
+| EPF | Employer name, total balance, monthly contribution, UAN |
+| NPS | Fund manager, Tier I/II, balance, monthly contribution, PRAN |
+| Real Estate | Property description, purchase price, current market value, purchase date, rental income |
+| Other | Asset name, current value, cost |
 
-Analytics Row: Uses granular code splitting to encapsulate the primary portfolio asset metrics within a high-performance streaming framework.
+### Client-Side Return Calculations
+All fixed-income / retirement calculations run in the browser — no extra API call:
 
-Data Workstation Grid: Allocates screen real estate asymmetricly. Places the drag-and-drop document upload platform on top of global tracking channels in a single compact column layout, while devoting a double-column track to detailed transaction data streams.
+- **FD** — compound interest quarterly (A = P × (1 + r/n)^nt), shows current accrued interest and maturity amount
+- **RD** — each instalment compounded for its remaining term at quarterly rate
+- **SIP** — FV = P × [(1 + i)^n − 1] / i × (1 + i), uses actual units × current NAV when available
+- **PPF** — projects maturity from current balance + future contributions at 7.1% p.a.
+- **SGB** — gold price appreciation + 2.5% p.a. interest on issue price
+- Live preview card in the add form updates on every keystroke
 
-2. Subscription Management Workspace (src/app/dashboard/billing/page.tsx)
-A dedicated, high-fidelity sub-view designed entirely around subscription metrics, billing actions, and system clarity.
+### XIRR (Extended IRR)
+- Newton-Raphson method, converges to 7 decimal places
+- Per-position XIRR using `InvestmentCashFlow` records (BUY / SELL / DIVIDEND / SIP_INSTALMENT)
+- Portfolio-wide XIRR across all cash flows
+- Backfill script included for existing positions
 
-Account State Panel: Renders structural account badges checking the exact operational limits currently active on the user's workspace profile.
+### Portfolio Analytics
+- **Health Score (0–100 / A–F grade)** — diversification (0–25), returns (0–25), risk balance (0–25), consistency (0–25)
+- **Allocation breakdown** — by asset type and currency with concentration warning (>30% single holding)
+- **Tax summary** — STCG (20%) and LTCG (12.5% above ₹1.25L exemption), post-budget 2024 rates
+- Physical gold P&L — inline price-per-gram input on each card for manual price entry
+- Real estate P&L — uses `currentMarketValue` stored in DB (separate from purchase price)
 
-Access Range Matrix: Formats raw timestamps pulled from database subscription fields into highly scannable status lines detailing exact account expiration bounds.
+### Financial Goals
+- Create goals by category: Retirement, Education, Home, Vehicle, Emergency Fund, Vacation, Wedding, Business, Other
+- Link investments to goals via `goalId` on each position
+- Goal calculator: set expected return % and monthly addition → instantly computes months to goal, expected date, required monthly SIP, 10-year projection chart
+- Unlinked investments banner shows how much wealth is not tracked toward any goal
+- Summary stats: total goals, goals achieved, overall corpus progress
 
-Database System Logs: Integrates a tabular report reading directly from user security logs to display historical confirmation paths, tracking IP addresses, and user-agent signatures.
+### Live Market Data
+- NSE/BSE equities via Yahoo Finance (`.NS` / `.BO` suffix)
+- US stocks via Yahoo Finance
+- Gold futures (GC=F), Crude Oil (CL=F)
+- USD/INR live forex rate (USDINR=X)
+- Market news feed via Yahoo Finance search (first ticker or RELIANCE.NS / TCS.NS fallback)
+- SIP reminder engine — fires when today is within 2 days of the SIP debit day
 
-3. Usage Limits Enforcer (src/components/dashboard/InvestmentManager.tsx)
-Manages portfolio wealth distributions while monitoring system limits. If a user's database count reveals they have hit the threshold limit under basic tier privileges, the component dynamically adapts:
+### AI Financial Advice
+- Powered by Groq llama-3.3-70b (temperature 0.2)
+- Three-section analysis: Temporal Health Diagnosis, Portfolio Optimization & Rebalancing, High-Yield Capital Allocation
+- SEBI advisor disclaimer — always visible, cannot be dismissed
+- Growth tips: 50/30/20 rule, emergency fund sizing, SIP automation, ELSS tax saving, category tracking
 
-It hides data input metrics behind a clean, blurred backdrop layer.
+### Tier System
 
-It displays a high-visibility message noting the restriction, using a prominent action link to route users cleanly to the payment processing container.
+| Feature | BASIC | PRO |
+|---|---|---|
+| Investment positions | 5 max | Unlimited |
+| Transaction records | 50 max | Unlimited |
+| AI PDF statement parsing | 3/month | Unlimited |
+| Real-time price feeds | ✓ | ✓ |
+| Portfolio news | ✓ | ✓ |
+| Annual analytics view | ✗ | ✓ |
+| AI financial advisor | ✗ | ✓ |
+| CSV/PDF export | ✗ | ✓ |
+| Tax-loss harvesting signals | ✗ | ✓ |
+| Security audit log | ✗ | ✓ |
 
-4. Telemetry Navigation Dropdown (src/components/dashboard/UserProfileDropdown.tsx)
-An interactive popover structure that separates display constraints from critical session logic.
+Upgrade via Razorpay (₹1,299/year). HMAC signature verification on webhook.
 
-Accepts an explicit, type-safe prop signature processing live metrics alongside logout actions.
+---
 
-Integrates a double-column layout tracking transaction histories and asset thresholds.
+## Project Structure
 
-Houses the payment component inline to trigger upgrade operations directly without requiring full navigation shifts.
+```
+src/
+├── app/
+│   ├── dashboard/
+│   │   ├── page.tsx                  # Overview — transaction preview, PDF upload, news
+│   │   ├── layout.tsx                # FAB + NotificationProvider (shared across all dashboard routes)
+│   │   ├── portfolio/page.tsx        # Read-only portfolio overview with analytics
+│   │   ├── transactions/page.tsx     # Full paginated transactions with category filters
+│   │   ├── goals/page.tsx            # Goal planner with calculator and projections
+│   │   ├── billing/page.tsx          # Subscription management
+│   │   └── settings/page.tsx
+│   ├── login/page.tsx
+│   ├── register/page.tsx
+│   └── api/
+│       ├── investments/route.ts      # GET (with XIRR + analytics) / POST
+│       ├── transactions/
+│       │   ├── route.ts              # GET paginated
+│       │   ├── manual/route.ts       # POST single transaction
+│       │   └── categorize/route.ts   # POST AI category suggestion
+│       ├── goals/
+│       │   ├── route.ts              # GET / POST
+│       │   └── [id]/route.ts         # DELETE / PATCH
+│       ├── portfolio/route.ts        # GET portfolio with price hydration
+│       ├── billing/create-order/route.ts
+│       └── payments/verify/route.ts
+├── components/dashboard/
+│   ├── InvestmentManager.tsx         # Full add/delete/sell/analytics client component
+│   ├── Sidebar.tsx                   # Fixed nav with route-aware active states
+│   ├── UserProfileDropdown.tsx       # Tier-aware profile dropdown
+│   ├── AddTransactionButton.tsx      # FAB (floating action button)
+│   ├── AddTransactionModal.tsx       # Manual transaction entry modal
+│   ├── SummarySection.tsx            # Server component — analytics + timeframe gate
+│   ├── SummaryPanelClient.tsx        # Client charts and timeframe switcher
+│   ├── FinancialAdvicePanel.tsx      # AI advice + disclaimer + growth tips
+│   ├── MacroNewsPanel.tsx            # Yahoo Finance news feed
+│   ├── TradingViewChart.tsx          # Embedded TradingView widget
+│   ├── UploadForm.tsx                # PDF upload form
+│   ├── RazorpayUpgradeButton.tsx     # Razorpay checkout trigger
+│   └── NotificationContext.tsx       # Toast notification system
+└── lib/
+    ├── parsers/statement-pipeline.ts # PDF extraction with OCR fallback + deduplication
+    ├── portfolio/analytics.ts        # XIRR, allocation, health score, tax summary
+    ├── market/stock-engine.ts        # Yahoo Finance price + news fetching
+    ├── ai/financial-analyzer.ts      # Groq financial advice + advanced summary
+    └── utils/
+        ├── currencyUtils.ts          # Symbol lookup + formatting (₹/$€£¥ etc.)
+        └── investmentCalculations.ts # FD, RD, SIP, PPF, SGB calculations
+```
 
-Theme Integration Architecture
-The platform relies on system variables inherited directly from the global theme configuration file to maintain a clean, high-density look without hardcoded styling rules:
+---
 
-Surface Tokens: Layout properties use system theme tags exclusively (bg-background, text-foreground, border-border, bg-card, bg-muted).
+## Database Schema
 
-Typography Matrix: Section headers use clean sans-serif tracking rules (font-sans tracking-tight font-medium), while numbers, balance logs, and feed columns use strict monospace layout systems (font-mono) to guarantee vertical mathematical data alignment.
+Key models (PostgreSQL via Prisma):
 
-Structural Separation: Visual boundaries avoid blocky design frames, separating panels through low-opacity rule borders (border-white/[0.06] or border-zinc-800/60).
+- **User** — tier (BASIC/PRO), subscriptionEnd, accounts, investments, transactions, goals, portfolios, taxEvents
+- **Investment** — 15 asset types, extended fields: isin, folioNumber, broker, currency, exchange, sector, maturityDate, interestRate, lockInDate, currentMarketValue, tags, goalId, portfolioId
+- **InvestmentCashFlow** — BUY / SELL / DIVIDEND / INTEREST / SIP_INSTALMENT / BONUS_UNITS / REDEMPTION (feeds XIRR)
+- **Transaction** — amount, description, category, date
+- **FinancialGoal** — targetAmount, targetDate, category (9 types), linked investments
+- **Portfolio** — named grouping of investments with color
+- **TaxEvent** — realized gains/losses with STCG/LTCG/STCL/LTCL classification
+- **SystemEvent** — audit log
+- **SecurityAuditLog** — IP, user agent per event
 
-System Initialization & Execution Loops
-Configure local tracking keys inside your environment file (.env):
+---
 
-Plaintext
-DATABASE_URL="postgresql://..."
-NEXT_PUBLIC_RAZORPAY_KEY_ID="rzp_test_..."
-RAZORPAY_KEY_SECRET="your_secret_key_here"
-Generate client structures and trigger schema migrations:
+## Local Development
 
-Bash
-npx prisma generate
+```bash
+# 1. Clone and install
+git clone https://github.com/yourusername/wealthwatch
+cd wealthwatch
+npm install
+
+# 2. Set up environment variables
+cp .env.example .env
+# Fill in: DATABASE_URL, NEXTAUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET,
+#          GROQ_API_KEY, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET,
+#          NEXT_PUBLIC_RAZORPAY_KEY_ID, NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+#          NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+
+# 3. Database setup
 npx prisma migrate dev
-Wipe old compilation route tracking artifacts out of memory and boot the server:
+npx prisma generate
 
-Bash
-rm -rf .next
+# 4. (Optional) Backfill opening cash flows for existing investments
+npx ts-node scripts/seed-cashflows.ts
+
+# 5. Run
 npm run dev
+```
+
+### Optional dependencies (OCR + CAS parsing)
+```bash
+npm install tesseract.js sharp  # OCR fallback for scanned PDFs
+npm install cas-parser          # CAMS/KFintech CAS file import
+```
+
+---
+
+## Environment Variables
+
+```env
+DATABASE_URL=
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+GROQ_API_KEY=
+
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+NEXT_PUBLIC_RAZORPAY_KEY_ID=
+
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=
+```
+
+---
+
+## Roadmap
+
+- [ ] Zerodha Kite Connect API integration (Pro-gated broker sync)
+- [ ] CAS file import via `cas-parser` (CAMS + KFintech)
+- [ ] AMFI NAV auto-update via daily cron (free public API)
+- [ ] SIP instalment auto-logging (mark SIP as paid → creates cash flow record)
+- [ ] AWS Textract for production-quality scanned PDF OCR
+- [ ] CSV import (Zerodha Coin, Kuvera, Groww exports)
+- [ ] Overlap detection between mutual fund holdings
+- [ ] Mobile app (React Native / Expo)
+
+---
+
+## License
+
+MIT
