@@ -151,7 +151,7 @@ function GoalCard({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden transition-all"
+      className="rounded-2xl overflow-hidden transition-all selection:bg-mint-500/20"
       style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border-token))" }}
     >
       {/* Achievement stripe */}

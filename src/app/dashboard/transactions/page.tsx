@@ -87,7 +87,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   const totalExpenses = transactions.filter((t:TransactionItem) => t.amount < 0).reduce((s:number, t:TransactionItem) => s + Math.abs(t.amount), 0);
 
   return (
-    <div className="app-shell">
+    <div className="app-shell selection:bg-mint-500/20">
       <Sidebar />
       <div className="app-content">
         {/* Top bar */}

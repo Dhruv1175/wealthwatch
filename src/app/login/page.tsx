@@ -3,120 +3,232 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { loginWithCredentials } from "@/app/actions/auth"; // adjust import path
+import { loginWithCredentials } from "@/app/actions/auth";
+import { Eye, EyeOff, Loader2, Activity } from "lucide-react";
 
 export default function LoginPage() {
-  const [error, setError] = useState("");
+  const [error,   setError]   = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
-  const handleFormAction = async (formData: FormData) => {
+  async function handleFormAction(formData: FormData) {
     setError("");
     setLoading(true);
     const result = await loginWithCredentials(formData);
     setLoading(false);
-    if (result?.error) {
-      setError(result.error);
-    }
-  };
+    if (result?.error) setError(result.error);
+  }
 
-  const handleGoogleSignIn = () => {
+  function handleGoogle() {
+    setGoogleLoading(true);
     signIn("google", { callbackUrl: "/dashboard" });
-  };
+  }
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center bg-brand-black text-brand-white font-sans antialiased overflow-x-hidden selection:bg-mint-500/20 px-4">
-      {/* Grid overlay – identical to landing page */}
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative selection:bg-mint-500/20"
+      style={{ background: "hsl(220 13% 5%)" }}
+    >
+      {/* Subtle grid overlay */}
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(hsl(220 13% 8% / 0.6) 1px, transparent 1px), linear-gradient(90deg, hsl(220 13% 8% / 0.6) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+          maskImage: "radial-gradient(ellipse 80% 60% at 50% 0%, #000 60%, transparent 100%)",
+        }}
+      />
 
-      {/* Minimal top bar */}
-      <div className="absolute top-0 left-0 right-0 border-b border-white/10 px-6 py-5">
-        <Link href="/" className="flex items-center gap-2.5 text-sm font-medium uppercase tracking-[0.12em] text-brand-white hover:text-gray-300 transition-colors">
-          <span className="flex items-center justify-center w-6 h-6 border border-mint-600">
-            <svg viewBox="0 0 14 14" className="w-3.5 h-3.5" fill="none">
-              <polyline points="1,10 4,6 7,8 10,3 13,5" stroke="#22C55E" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+      {/* Top bar */}
+      <div
+        className="fixed top-0 left-0 right-0 z-10 flex items-center px-8 h-16"
+        style={{ borderBottom: "1px solid hsl(var(--border-token))", background: "hsl(220 13% 5% / 0.85)", backdropFilter: "blur(20px)" }}
+      >
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: "hsl(var(--info-dim))", border: "1px solid hsl(var(--info) / 0.3)" }}
+          >
+            <Activity className="w-4 h-4" style={{ color: "hsl(var(--info))" }} />
+          </div>
+          <span
+            className="text-sm font-bold tracking-tight transition-colors"
+            style={{ color: "hsl(var(--foreground))" }}
+          >
+            WealthWatch
           </span>
-          WealthWatch
         </Link>
       </div>
 
-      {/* Login card */}
-      <div className="w-full max-w-md border border-white/10 p-8 md:p-10 bg-gray-950/50 backdrop-blur-sm">
-        <h1 className="text-2xl font-light tracking-[-0.02em] mb-2">Welcome back</h1>
-        <p className="text-sm text-gray-400 mb-8">Sign in to your account to continue.</p>
+      {/* Card */}
+      <div
+        className="relative w-full max-w-md rounded-2xl overflow-hidden"
+        style={{
+          background: "hsl(var(--surface))",
+          border:     "1px solid hsl(var(--border-token))",
+          boxShadow:  "0 32px 80px hsl(220 14% 3% / 0.6)",
+        }}
+      >
+        {/* Top accent line */}
+        <div style={{ height: "2px", background: "linear-gradient(90deg, transparent, hsl(var(--info)), transparent)" }} />
 
-        {error && (
-          <div className="mb-6 px-4 py-3 border border-error-500/30 bg-error-500/10 text-error-400 text-sm font-mono">
-            {error}
-          </div>
-        )}
-
-        {/* Credentials form */}
-        <form action={handleFormAction} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-xs font-mono text-gray-500 tracking-[0.08em] uppercase">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              placeholder="name@company.com"
-              className="w-full py-3 px-4 bg-brand-black border border-white/10 text-brand-white font-sans text-sm outline-none focus:border-sky-500 transition-colors placeholder:text-gray-600"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-xs font-mono text-gray-500 tracking-[0.08em] uppercase">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              placeholder="••••••••"
-              className="w-full py-3 px-4 bg-brand-black border border-white/10 text-brand-white font-sans text-sm outline-none focus:border-sky-500 transition-colors placeholder:text-gray-600"
-            />
+        <div className="p-8 md:p-10">
+          {/* Heading */}
+          <div className="mb-8">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+              style={{ background: "hsl(var(--info-dim))", border: "1px solid hsl(var(--info) / 0.3)" }}
+            >
+              <Activity className="w-5 h-5" style={{ color: "hsl(var(--info))" }} />
+            </div>
+            <h1
+              className="text-2xl font-black tracking-tight mb-1"
+              style={{ color: "hsl(var(--foreground))" }}
+            >
+              Welcome back
+            </h1>
+            <p className="text-sm" style={{ color: "hsl(var(--foreground-tertiary))" }}>
+              Sign in to continue to your dashboard.
+            </p>
           </div>
 
+          {/* Error */}
+          {error && (
+            <div
+              className="rounded-xl px-4 py-3 mb-6 text-sm"
+              style={{
+                background: "hsl(var(--negative-dim))",
+                border:     "1px solid hsl(var(--negative) / 0.3)",
+                color:      "hsl(var(--negative))",
+                fontFamily: "Geist Mono",
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          {/* Form */}
+          <form action={handleFormAction} className="space-y-4">
+            <div>
+              <label className="label-xs block mb-1.5">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                placeholder="you@example.com"
+                className="field"
+                autoComplete="email"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="label-xs">Password</label>
+                <Link
+                  href="/forgot-password"
+                  className="text-[10px] transition-colors"
+                  style={{ color: "hsl(var(--info))" }}
+                >
+                  Forgot password?
+                </Link>
+              </div>
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPass ? "text" : "password"}
+                  required
+                  placeholder="••••••••"
+                  className="field pr-10"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                  style={{ color: "hsl(var(--foreground-tertiary))" }}
+                  tabIndex={-1}
+                >
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || googleLoading}
+              className="btn-primary w-full justify-center text-sm py-3 gap-2"
+            >
+              {loading ? (
+                <><Loader2 className="w-4 h-4 animate-spin" />Signing in…</>
+              ) : (
+                "Sign in"
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px" style={{ background: "hsl(var(--border-token))" }} />
+            <span
+              className="text-xs px-2"
+              style={{ color: "hsl(var(--foreground-tertiary))", fontFamily: "Geist Mono" }}
+            >
+              OR
+            </span>
+            <div className="flex-1 h-px" style={{ background: "hsl(var(--border-token))" }} />
+          </div>
+
+          {/* Google */}
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 font-sans text-sm font-medium text-brand-black bg-brand-white border border-brand-white hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            type="button"
+            onClick={handleGoogle}
+            disabled={loading || googleLoading}
+            className="btn-ghost w-full justify-center text-sm py-3 gap-3"
           >
-            {loading ? "Signing in…" : "Sign in with Email"}
+            {googleLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <svg viewBox="0 0 18 18" className="w-4 h-4 shrink-0" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+                <path fill="#FBBC05" d="M3.964 10.706c-.18-.54-.282-1.117-.282-1.706s.102-1.166.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/>
+                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 6.294C4.672 4.169 6.656 3.58 9 3.58z"/>
+              </svg>
+            )}
+            Continue with Google
           </button>
-        </form>
 
-        {/* Divider */}
-        <div className="flex items-center gap-3 my-6 text-[11px] text-gray-600 font-mono before:flex-1 before:h-px before:bg-white/10 after:flex-1 after:h-px after:bg-white/10">
-          OR
+          {/* Register link */}
+          <p
+            className="mt-8 text-center text-xs"
+            style={{ color: "hsl(var(--foreground-tertiary))" }}
+          >
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/register"
+              className="font-semibold transition-colors"
+              style={{ color: "hsl(var(--info))" }}
+            >
+              Create one
+            </Link>
+          </p>
         </div>
-
-        {/* Google sign-in */}
-        <button
-          onClick={handleGoogleSignIn}
-          className="flex items-center justify-center gap-3 w-full py-3 bg-brand-white text-brand-black font-sans text-sm font-medium hover:bg-gray-200 transition-colors"
-        >
-          <svg viewBox="0 0 18 18" className="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
-            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
-            <path fill="#FBBC05" d="M3.964 10.706c-.18-.54-.282-1.117-.282-1.706s.102-1.166.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"/>
-            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 6.294C4.672 4.169 6.656 3.58 9 3.58z"/>
-          </svg>
-          Continue with Google
-        </button>
-
-        {/* Register link */}
-        <p className="mt-6 text-center text-xs text-gray-500 font-mono">
-          Don’t have an account?{" "}
-          <Link href="/register" className="text-sky-400 underline underline-offset-2 hover:text-sky-300 transition-colors">
-            Create one
-          </Link>
-        </p>
       </div>
+
+      {/* Footer note */}
+      <p
+        className="mt-6 text-xs text-center"
+        style={{ color: "hsl(var(--foreground-tertiary))" }}
+      >
+        By signing in you agree to our{" "}
+        <span style={{ color: "hsl(var(--foreground-secondary))" }}>Terms of Service</span>
+        {" "}and{" "}
+        <span style={{ color: "hsl(var(--foreground-secondary))" }}>Privacy Policy</span>.
+      </p>
     </div>
   );
 }

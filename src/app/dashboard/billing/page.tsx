@@ -99,7 +99,7 @@ export default async function BillingPage() {
   const renewalUrgent = isPro && daysLeft !== null && daysLeft <= 30;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell selection:bg-mint-500/20">
       <Sidebar />
 
       <div className="app-content">

@@ -264,7 +264,7 @@ export default async function PortfolioPage() {
   ];
 
   return (
-    <div className="app-shell">
+    <div className="app-shell selection:bg-mint-500/20">
       <Sidebar />
       <div className="app-content">
 

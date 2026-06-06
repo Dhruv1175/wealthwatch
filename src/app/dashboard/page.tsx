@@ -68,7 +68,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell selection:bg-mint-500/20">
       <Sidebar />
 
       <div className="app-content">
