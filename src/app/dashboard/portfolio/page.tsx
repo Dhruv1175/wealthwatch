@@ -59,7 +59,7 @@ function typeBadgeClass(type: string): string {
   if (["SIP_MUTUAL_FUND","MUTUAL_FUND_LUMPSUM"].includes(type))   return "badge-positive";
   if (["FIXED_DEPOSIT","RECURRING_DEPOSIT","BOND"].includes(type)) return "badge-warning";
   if (type === "GOLD")                                             return "badge-premium";
-  if (type === "CRYPTO")                                           return "badge-negative";
+  if (type === "CRYPTO")                                          return "badge-negative";
   if (["PPF","EPF","NPS"].includes(type))                          return "badge-muted";
   return "badge-muted";
 }
@@ -268,72 +268,84 @@ export default async function PortfolioPage() {
       <Sidebar />
       <div className="app-content">
 
-        {/* ── TOP BAR ───────────────────────────────────────────────────── */}
+        {/* ── TOP BAR (Perfectly Responsive) ────────────────────────────────── */}
         <header
-          className="sticky top-0 z-20 flex items-center justify-between px-8 h-16 shrink-0"
+          className="sticky top-0 z-20 flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-8 py-3 sm:py-0 sm:h-16 shrink-0 gap-3 sm:gap-0"
           style={{
             background:     "hsl(220 14% 6% / 0.9)",
             backdropFilter: "blur(20px)",
             borderBottom:   "1px solid hsl(var(--border-token))",
           }}
         >
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="flex items-center gap-2 text-sm transition-colors text-secondary hover:text-foreground">
-              <ArrowLeft className="w-4 h-4" />
+          {/* Left Breadcrumbs Group */}
+          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+            <Link href="/dashboard" className="flex items-center gap-1.5 text-xs sm:text-sm transition-colors text-secondary hover:text-foreground shrink-0">
+              <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               Dashboard
             </Link>
-            <span style={{ color: "hsl(var(--border-token))" }}>·</span>
-            <span className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>Portfolio</span>
+            <span className="text-secondary/40 select-none text-xs sm:text-sm">/</span>
+            <span className="text-xs sm:text-sm font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>
+              Portfolio
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard/goals" className="text-xs font-semibold" style={{ color: "hsl(var(--info))" }}>
-              Goals →
-            </Link>
-            <Link href="/dashboard" className="btn-ghost text-xs py-1.5 px-3">
-              Add / Manage Positions
-            </Link>
-            {isPro ? (
-              <span className="badge-premium flex items-center gap-1.5">
-                <Zap className="w-3 h-3" /> Pro
-              </span>
-            ) : (
-              <span className="badge-muted flex items-center gap-1.5">
-                <Lock className="w-3 h-3" /> {Math.min(totalCount, BASIC_LIMIT)}/5
-              </span>
-            )}
+
+          {/* Right Navigation Actions Group */}
+          <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 w-full sm:w-auto border-t border-token-border/20 pt-2 sm:pt-0 sm:border-0">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link href="/dashboard/goals" className="text-[11px] sm:text-xs font-bold transition-opacity hover:opacity-80 whitespace-nowrap" style={{ color: "hsl(var(--info))" }}>
+                Goals →
+              </Link>
+              <Link href="/dashboard" className="btn-ghost text-[11px] sm:text-xs py-1.5 px-2.5 sm:px-3 whitespace-nowrap">
+                <span className="hidden xs:inline">Add / Manage Positions</span>
+                <span className="xs:hidden">Manage</span>
+              </Link>
+            </div>
+            
+            <div className="shrink-0">
+              {isPro ? (
+                <span className="badge-premium flex items-center gap-1.5 text-[10px] sm:text-xs">
+                  <Zap className="w-3 h-3" /> Pro
+                </span>
+              ) : (
+                <span className="badge-muted flex items-center gap-1.5 text-[10px] sm:text-xs">
+                  <Lock className="w-3 h-3" /> {Math.min(totalCount, BASIC_LIMIT)}/5
+                </span>
+              )}
+            </div>
           </div>
         </header>
 
-        <main className="flex-1 px-8 py-8 space-y-8 max-w-7xl mx-auto w-full">
+        {/* ── MAIN CONTENT (Responsive Paddings adjusted) ───────────────────── */}
+        <main className="flex-1 px-4 sm:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto w-full">
 
           {/* ── PAGE HEADING ──────────────────────────────────────────────── */}
           <div>
             <p className="label-xs mb-1">Investment Overview</p>
-            <h1 className="text-3xl font-black tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
               Portfolio
             </h1>
           </div>
 
           {/* ── HERO STATS ────────────────────────────────────────────────── */}
           {positions.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
 
               {/* Total Value */}
-              <div className="rounded-2xl p-6 space-y-2 col-span-2 md:col-span-1"
+              <div className="rounded-2xl p-4 sm:p-6 space-y-1 sm:space-y-2 col-span-2 md:col-span-1"
                 style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border-token))" }}>
                 <p className="label-xs">Total Value</p>
-                <p className="text-3xl font-black tracking-tight tabular"
+                <p className="text-2xl sm:text-3xl font-black tracking-tight tabular"
                   style={{ color: "hsl(var(--foreground))", fontFamily: "Geist" }}>
                   {formatCurrency(totalValue, "INR", { compact: true })}
                 </p>
-                <p className="text-xs" style={{ color: "hsl(var(--foreground-tertiary))" }}>
+                <p className="text-[11px] sm:text-xs" style={{ color: "hsl(var(--foreground-tertiary))" }}>
                   {positions.length} position{positions.length !== 1 ? "s" : ""}
                   {hiddenCount > 0 && <span style={{ color: "hsl(var(--warning))", marginLeft: 4 }}>· +{hiddenCount} hidden</span>}
                 </p>
               </div>
 
               {/* Total P&L */}
-              <div className="rounded-2xl p-6 space-y-2 relative overflow-hidden"
+              <div className="rounded-2xl p-4 sm:p-6 space-y-1 sm:space-y-2 relative overflow-hidden"
                 style={{
                   background: pnlPos ? "linear-gradient(135deg, hsl(152 69% 12%), hsl(152 69% 8%))" : "linear-gradient(135deg, hsl(4 86% 12%), hsl(4 86% 8%))",
                   border:     `1px solid hsl(var(--${pnlPos ? "positive" : "negative"}) / 0.3)`,
@@ -343,21 +355,21 @@ export default async function PortfolioPage() {
                 <p className="label-xs relative" style={{ color: `hsl(var(--${pnlPos ? "positive" : "negative"}) / 0.7)` }}>
                   Total P&amp;L
                 </p>
-                <p className="text-2xl font-black tabular relative"
+                <p className="text-xl sm:text-2xl font-black tabular relative"
                   style={{ color: `hsl(var(--${pnlPos ? "positive" : "negative"}))`, fontFamily: "Geist" }}>
                   {formatPnL(totalProfit, "INR", 0)}
                 </p>
-                <p className="text-sm font-bold tabular relative"
+                <p className="text-xs sm:text-sm font-bold tabular relative"
                   style={{ color: `hsl(var(--${pnlPos ? "positive" : "negative"}))`, fontFamily: "Geist Mono" }}>
                   {formatPct(overallPct)}
                 </p>
               </div>
 
               {/* XIRR */}
-              <div className="rounded-2xl p-6 space-y-2"
+              <div className="rounded-2xl p-4 sm:p-6 space-y-1 sm:space-y-2"
                 style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border-token))" }}>
                 <p className="label-xs">Portfolio XIRR</p>
-                <p className="text-3xl font-black tabular"
+                <p className="text-2xl sm:text-3xl font-black tabular"
                   style={{
                     color: portfolioXirr === null ? "hsl(var(--foreground-tertiary))"
                       : portfolioXirr >= 0 ? "hsl(var(--positive))" : "hsl(var(--negative))",
@@ -365,24 +377,24 @@ export default async function PortfolioPage() {
                   }}>
                   {portfolioXirr !== null ? formatPct(portfolioXirr) : "—"}
                 </p>
-                <p className="text-xs" style={{ color: "hsl(var(--foreground-tertiary))" }}>
+                <p className="text-[11px] sm:text-xs" style={{ color: "hsl(var(--foreground-tertiary))" }}>
                   Annualised return
                 </p>
               </div>
 
               {/* Health Score */}
-              <div className="rounded-2xl p-6 space-y-2"
+              <div className="rounded-2xl p-4 sm:p-6 space-y-1 sm:space-y-2"
                 style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border-token))" }}>
                 <p className="label-xs">Health Score</p>
-                <div className="flex items-end gap-2">
-                  <p className="text-4xl font-black" style={{ color: gradeColor(healthScore.grade) }}>
+                <div className="flex items-end gap-1.5">
+                  <p className="text-3xl sm:text-4xl font-black leading-none" style={{ color: gradeColor(healthScore.grade) }}>
                     {healthScore.grade}
                   </p>
-                  <p className="text-sm mb-1 font-bold" style={{ color: "hsl(var(--foreground-tertiary))", fontFamily: "Geist Mono" }}>
+                  <p className="text-[11px] sm:text-sm font-bold" style={{ color: "hsl(var(--foreground-tertiary))", fontFamily: "Geist Mono" }}>
                     {healthScore.score}/100
                   </p>
                 </div>
-                <div className="progress-track">
+                <div className="progress-track mt-1">
                   <div className="progress-fill" style={{ width: `${healthScore.score}%`, background: gradeColor(healthScore.grade) }} />
                 </div>
               </div>
@@ -391,7 +403,7 @@ export default async function PortfolioPage() {
 
           {/* ── SIP REMINDERS ─────────────────────────────────────────────── */}
           {sipReminders.length > 0 && (
-            <div className="rounded-2xl px-5 py-4 flex items-start gap-3"
+            <div className="rounded-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-start gap-3"
               style={{ background: "hsl(var(--info-dim))", border: "1px solid hsl(var(--info) / 0.25)" }}>
               <Activity className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "hsl(var(--info))" }} />
               <div className="space-y-0.5">
@@ -405,21 +417,21 @@ export default async function PortfolioPage() {
 
           {/* ── ALLOCATION + HEALTH FACTORS ───────────────────────────────── */}
           {positions.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
 
               {/* Allocation */}
-              <div className="rounded-2xl p-6"
+              <div className="rounded-2xl p-4 sm:p-6"
                 style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border-token))" }}>
                 <p className="text-sm font-semibold mb-4" style={{ color: "hsl(var(--foreground))" }}>Asset Allocation</p>
                 <div className="space-y-3">
                   {allocation.byType.map((item, i) => (
                     <div key={item.label} className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: ALLOC_COLORS[i % ALLOC_COLORS.length] }} />
-                          <span className="text-xs font-medium" style={{ color: "hsl(var(--foreground-secondary))" }}>{item.label}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0" style={{ background: ALLOC_COLORS[i % ALLOC_COLORS.length] }} />
+                          <span className="text-xs font-medium truncate" style={{ color: "hsl(var(--foreground-secondary))" }}>{item.label}</span>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                           <span className="text-xs tabular" style={{ color: "hsl(var(--foreground-tertiary))", fontFamily: "Geist Mono" }}>
                             {formatCurrency(item.value, "INR", { compact: true })}
                           </span>
@@ -429,7 +441,7 @@ export default async function PortfolioPage() {
                           </span>
                         </div>
                       </div>
-                      <div className="progress-track" style={{ height: "5px" }}>
+                      <div className="progress-track" style={{ height: "4px" }}>
                         <div className="progress-fill" style={{ width: `${item.percentage}%`, background: ALLOC_COLORS[i % ALLOC_COLORS.length] }} />
                       </div>
                     </div>
@@ -444,21 +456,21 @@ export default async function PortfolioPage() {
               </div>
 
               {/* Health factors + flags */}
-              <div className="rounded-2xl p-6"
+              <div className="rounded-2xl p-4 sm:p-6"
                 style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border-token))" }}>
                 <p className="text-sm font-semibold mb-4" style={{ color: "hsl(var(--foreground))" }}>Health Breakdown</p>
                 <div className="space-y-3">
                   {Object.entries(healthScore.factors).map(([key, val]) => (
                     <div key={key} className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium capitalize" style={{ color: "hsl(var(--foreground-secondary))" }}>
+                        <span className="text-xs font-medium capitalize truncate pr-2" style={{ color: "hsl(var(--foreground-secondary))" }}>
                           {key.replace(/([A-Z])/g, " $1")}
                         </span>
-                        <span className="text-xs font-bold tabular" style={{ fontFamily: "Geist Mono", color: "hsl(var(--foreground))" }}>
+                        <span className="text-xs font-bold tabular shrink-0" style={{ fontFamily: "Geist Mono", color: "hsl(var(--foreground))" }}>
                           {val}/25
                         </span>
                       </div>
-                      <div className="progress-track" style={{ height: "5px" }}>
+                      <div className="progress-track" style={{ height: "4px" }}>
                         <div className="progress-fill" style={{ width: `${(val / 25) * 100}%`, background: "hsl(var(--info))" }} />
                       </div>
                     </div>
@@ -481,7 +493,7 @@ export default async function PortfolioPage() {
 
           {/* ── HIDDEN POSITIONS BANNER ───────────────────────────────────── */}
           {hiddenCount > 0 && (
-            <div className="rounded-2xl p-5 flex items-center justify-between gap-6"
+            <div className="rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
               style={{ background: "hsl(var(--warning-dim))", border: "1px solid hsl(var(--warning) / 0.3)" }}>
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
@@ -500,14 +512,14 @@ export default async function PortfolioPage() {
               <RazorpayUpgradeButton
                 sessionUser={{ id: session.user.id!, name: user?.name, email: user?.email, image: user?.image }}
                 buttonText="Upgrade to Pro"
-                className="btn-premium text-xs shrink-0 px-5 py-2.5"
+                className="btn-premium text-xs w-full sm:w-auto text-center justify-center shrink-0 px-5 py-2.5"
               />
             </div>
           )}
 
           {/* ── POSITION CARDS ────────────────────────────────────────────── */}
           {positions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 rounded-2xl gap-4"
+            <div className="flex flex-col items-center justify-center py-16 sm:py-24 rounded-2xl gap-4 px-4 text-center"
               style={{ background: "hsl(var(--surface))", border: "2px dashed hsl(var(--border-token))" }}>
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
                 style={{ background: "hsl(var(--surface-raised))", border: "1px solid hsl(var(--border-token))" }}>
@@ -515,7 +527,7 @@ export default async function PortfolioPage() {
               </div>
               <div className="text-center">
                 <p className="text-base font-bold mb-1" style={{ color: "hsl(var(--foreground))" }}>No positions yet</p>
-                <p className="text-sm" style={{ color: "hsl(var(--foreground-tertiary))" }}>
+                <p className="text-sm px-4 max-w-sm mx-auto" style={{ color: "hsl(var(--foreground-tertiary))" }}>
                   Add positions from the dashboard to see your portfolio here.
                 </p>
               </div>
@@ -530,35 +542,35 @@ export default async function PortfolioPage() {
 
                 return (
                   <div key={pos.id}
-                    className="rounded-2xl p-5 flex flex-col gap-4 server-card-hover transition-all"
+                    className="rounded-2xl p-4 sm:p-5 flex flex-col gap-4 server-card-hover transition-all"
                     style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border-token))" }}>
 
                     {/* Card header */}
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                          <p className="text-base font-black tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
+                        <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                          <p className="text-base font-black tracking-tight truncate max-w-[140px]" style={{ color: "hsl(var(--foreground))" }}>
                             {["FIXED_DEPOSIT","RECURRING_DEPOSIT","PPF","EPF","NPS","REAL_ESTATE","OTHER"].includes(pos.type)
                               ? pos.name
                               : pos.symbol}
                           </p>
-                          <span className={`${typeBadgeClass(pos.type)} text-[9px]`}>
+                          <span className={`${typeBadgeClass(pos.type)} text-[9px] shrink-0`}>
                             {assetTypeLabel(pos.type)}
                           </span>
                           {pos.broker && (
-                            <span className="badge-muted text-[9px]">{pos.broker}</span>
+                            <span className="badge-muted text-[9px] shrink-0 max-w-[70px] truncate">{pos.broker}</span>
                           )}
                           {cur !== "INR" && (
-                            <span className="badge-info text-[9px]">{cur} ({sym})</span>
+                            <span className="badge-info text-[9px] shrink-0">{cur} ({sym})</span>
                           )}
                         </div>
-                        <p className="text-xs truncate max-w-[200px]" style={{ color: "hsl(var(--foreground-tertiary))" }}>
+                        <p className="text-xs truncate max-w-[180px]" style={{ color: "hsl(var(--foreground-tertiary))" }}>
                           {["FIXED_DEPOSIT","RECURRING_DEPOSIT","PPF","EPF","NPS","REAL_ESTATE"].includes(pos.type)
                             ? pos.interestRate ? `${pos.interestRate}% p.a.` : ""
                             : pos.name}
                         </p>
                         {pos.goal && (
-                          <p className="text-[10px] mt-0.5 font-semibold" style={{ color: "hsl(var(--premium))" }}>
+                          <p className="text-[10px] mt-0.5 font-semibold truncate" style={{ color: "hsl(var(--premium))" }}>
                             🎯 {pos.goal.name}
                           </p>
                         )}
@@ -580,7 +592,7 @@ export default async function PortfolioPage() {
                             {formatPct(pos.pnlPct)}
                           </p>
                           {pos.isProjection && (
-                            <p className="text-[9px] leading-none" style={{ color: "hsl(var(--foreground-tertiary))" }}>est.</p>
+                            <p className="text-[9px] leading-none mt-0.5" style={{ color: "hsl(var(--foreground-tertiary))" }}>est.</p>
                           )}
                         </div>
                       </div>
@@ -606,7 +618,7 @@ export default async function PortfolioPage() {
                         </p>
                       </div>
 
-                      {/* Price per unit — only for equity/ETF/crypto/gold ETF */}
+                      {/* Price per unit */}
                       {!["FIXED_DEPOSIT","RECURRING_DEPOSIT","PPF","EPF","NPS","REAL_ESTATE","OTHER","SIP_MUTUAL_FUND"].includes(pos.type) && (
                         <>
                           <div>
@@ -628,7 +640,7 @@ export default async function PortfolioPage() {
                         </>
                       )}
 
-                      {/* Units — equity, ETF, MF lumpsum, crypto, gold ETF */}
+                      {/* Units */}
                       {["EQUITY_STOCK","ETF","US_STOCK","MUTUAL_FUND_LUMPSUM","CRYPTO","GOLD"].includes(pos.type) && (
                         <div>
                           <p className="label-xs mb-0.5">Units</p>
@@ -678,7 +690,7 @@ export default async function PortfolioPage() {
                           <p className="label-xs mb-0.5">Matures</p>
                           <p className="text-xs font-bold flex items-center gap-1"
                             style={{ color: "hsl(var(--foreground-secondary))", fontFamily: "Geist Mono" }}>
-                            <Calendar className="w-2.5 h-2.5" />
+                            <Calendar className="w-2.5 h-2.5 shrink-0" />
                             {new Date(pos.maturityDate.toString()).toLocaleDateString("en-IN", {
                               day: "2-digit", month: "short", year: "2-digit",
                             })}
@@ -708,7 +720,7 @@ export default async function PortfolioPage() {
                         <p className="label-xs mb-0.5">{pos.label}</p>
                         <p className="text-base font-black tabular"
                           style={{
-                            color:      profit ? "hsl(var(--positive))" : "hsl(var(--negative))",
+                            color:       profit ? "hsl(var(--positive))" : "hsl(var(--negative))",
                             fontFamily: "Geist Mono",
                           }}>
                           {formatPnL(pos.profit, cur, 0)}
@@ -716,7 +728,7 @@ export default async function PortfolioPage() {
                       </div>
                       <div className="text-right">
                         <p className="label-xs mb-0.5">Holding Value</p>
-                        <p className="text-lg font-black tabular"
+                        <p className="text-base sm:text-lg font-black tabular"
                           style={{ color: "hsl(var(--foreground))", fontFamily: "Geist" }}>
                           {formatCurrency(pos.currentValue, cur, { compact: true })}
                         </p>
@@ -730,7 +742,7 @@ export default async function PortfolioPage() {
 
           {/* ── UPGRADE WALL ──────────────────────────────────────────────── */}
           {!isPro && (
-            <div className="rounded-2xl p-8 text-center space-y-4 relative overflow-hidden"
+            <div className="rounded-2xl p-6 sm:p-8 text-center space-y-4 relative overflow-hidden"
               style={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--premium) / 0.2)" }}>
               <div className="absolute inset-0 pointer-events-none"
                 style={{ background: "radial-gradient(ellipse 60% 50% at 50% 100%, hsl(var(--premium) / 0.05), transparent)" }} />
@@ -744,11 +756,11 @@ export default async function PortfolioPage() {
                   Track unlimited positions with live XIRR, allocation analytics, tax estimates, and goal linking.
                 </p>
               </div>
-              <div className="relative">
+              <div className="relative pt-2">
                 <RazorpayUpgradeButton
                   sessionUser={{ id: session.user.id!, name: user?.name, email: user?.email, image: user?.image }}
                   buttonText="Upgrade to Pro (₹1,299 / year)"
-                  className="btn-premium text-sm px-8 py-3 inline-flex items-center gap-2"
+                  className="btn-premium text-sm w-full sm:w-auto px-8 py-3 inline-flex items-center justify-center gap-2"
                 />
               </div>
             </div>
