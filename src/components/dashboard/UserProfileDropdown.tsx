@@ -3,10 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
-  ChevronDown, User, CreditCard, LogOut,
+  ChevronDown, User, CreditCard, LogOut, Settings, PieChart, Moon, Sun, Monitor,
   ShieldCheck, ShieldOff, Check, Edit3, Upload, X,
   TrendingUp, Receipt, Zap, Infinity,
 } from "lucide-react";
+import { isUserPro } from "@/lib/auth/tier-utils";
 import { useNotifications } from "@/components/dashboard/NotificationContext";
 import RazorpayUpgradeButton from "@/components/dashboard/RazorpayUpgradeButton";
 
@@ -40,7 +41,7 @@ export default function UserProfileDropdown({
   const ref = useRef<HTMLDivElement>(null);
 
   // Derived constant — no need for a function
-  const isPro = sessionUser.tier === "PRO";
+  const isPro = isUserPro({ tier: sessionUser.tier });
 
   const initials  = (currentName || sessionUser.name || "WW").slice(0, 2).toUpperCase();
   const investPct = Math.min((stats.totalInvestments  / BASIC_INVEST_LIMIT) * 100, 100);

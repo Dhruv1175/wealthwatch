@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
+import { isUserPro } from "@/lib/auth/tier-utils";
 import { fetchAiAdviceOnly } from "@/lib/ai/financial-analyzer";
 import {
   Sparkles, ShieldAlert, TrendingUp, AlertTriangle,
@@ -41,7 +42,7 @@ export default async function FinancialAdvicePanel({
     }),
   ]);
 
-  const isPro = user?.tier === "PRO";
+  const isPro = isUserPro(user);
 
   const formattedInvestments = investments.map((i: InvestmentInput) => ({
     symbol:    i.symbol,

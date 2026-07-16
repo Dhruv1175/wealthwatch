@@ -7,21 +7,25 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized cron execution attempt." }, { status: 401 });
   }
     try{
-const expiredUsers = await prisma.user.updateMany({
-      where: {
-        subscriptionEnd: {
-          lte: new Date(), // Less than or equal to right now
+    const result = await prisma.$transaction(async (tx) => {
+      const expiredUsersCount = await tx.user.updateMany({
+        where: {
+          subscriptionEnd: { lte: new Date() },
+          tier: "PRO",
         },
-        tier: "PRO", // Only look at users who are currently PRO
-      },
-      data: {
-        tier: "BASIC",
-        subscriptionEnd: null, // Clear the expiration date
-      },
+        data: {
+          tier: "BASIC",
+          subscriptionEnd: null,
+        },
+      });
+      return expiredUsersCount;
+    }, {
+      maxWait: 2000, 
+      timeout: 5000 
     });
 
-    console.log(`Cron execution successful. Downgraded ${expiredUsers.count} expired users.`);
-    return NextResponse.json({ success: true, downgradedCount: expiredUsers.count });
+    console.log(`Cron execution successful. Downgraded ${result.count} expired users.`);
+    return NextResponse.json({ success: true, downgradedCount: result.count });
 
   } catch (err) {
     console.error("Cron subscription sweep failed:", err);

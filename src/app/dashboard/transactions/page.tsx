@@ -9,6 +9,7 @@ import {
 import Sidebar from "@/components/dashboard/Sidebar";
 import RazorpayUpgradeButton from "@/components/dashboard/RazorpayUpgradeButton";
 import AddTransactionButtonInline from "@/components/dashboard/AddTransactionButton";
+import { isUserPro } from "@/lib/auth/tier-utils";
 
 // ── Tier limits ────────────────────────────────────────────────────────────────
 const BASIC_TX_LIMIT   = 50;
@@ -39,7 +40,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
     select: { tier: true, name: true, email: true, image: true },
   });
 
-  const isPro  = user?.tier === "PRO";
+  const isPro  = isUserPro(user);
   const offset = (page - 1) * PAGE_SIZE;
 
   const [allCount, categories] = await Promise.all([

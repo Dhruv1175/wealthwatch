@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
+import { isUserPro } from "@/lib/auth/tier-utils";
 import { getTrackedInvestments } from "@/lib/market/stock-engine";
 import {
   calculateXIRR,
@@ -56,7 +57,7 @@ export async function GET() {
 
     
 
-    const isPro = user?.tier === "PRO";
+    const isPro = isUserPro(user);
 
     const investments = await prisma.investment.findMany({
       where:   { userId: session.user.id },

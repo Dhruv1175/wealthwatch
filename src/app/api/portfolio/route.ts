@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
+import { isUserPro } from "@/lib/auth/tier-utils";
 
 const BASIC_INVESTMENT_LIMIT = 5;
 
@@ -30,7 +31,7 @@ export async function GET() {
     select: { tier: true },
   });
 
-  const isPro = user?.tier === "PRO";
+  const isPro = isUserPro(user);
 
   const allInvestments = await prisma.investment.findMany({
     where:   { userId: session.user.id },

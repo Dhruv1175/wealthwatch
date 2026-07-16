@@ -3,6 +3,7 @@ import { extractText } from "unpdf";
 import Groq from "groq-sdk";
 import prisma from "@/lib/db";
 import crypto from "crypto";
+import { sanitizeInput } from "@/lib/sanitize";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -173,8 +174,8 @@ export async function processStatementPipeline(
     data: toInsert.map((tx:RawTransaction) => ({
       userId,
       amount:      tx.amount,
-      description: tx.description,
-      category:    tx.category,
+      description: sanitizeInput(tx.description),
+      category:    sanitizeInput(tx.category),
       date:        new Date(tx.date),
     })),
   });

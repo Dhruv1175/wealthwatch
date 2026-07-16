@@ -184,13 +184,15 @@ function computeReturns(inv: any, livePrice: number): {
 export default async function PortfolioPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/");
+  
+  const { isUserPro } = await import("@/lib/auth/tier-utils");
 
   const user = await prisma.user.findUnique({
     where:  { id: session.user.id },
     select: { tier: true, name: true, email: true, image: true },
   });
 
-  const isPro = user?.tier === "PRO";
+  const isPro = isUserPro(user);
 
   const allInvestments = await prisma.investment.findMany({
     where:   { userId: session.user.id },

@@ -5,6 +5,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
+import { sanitizeInput } from "@/lib/sanitize";
 
 const BASIC_TX_LIMIT = 50;
 
@@ -62,8 +63,8 @@ export async function POST(req: Request) {
       data: {
         userId:      session.user.id,
         amount:      finalAmount,
-        description: description.trim(),
-        category:    category?.trim() || "OTHER",
+        description: sanitizeInput(description.trim()),
+        category:    sanitizeInput(category?.trim() || "OTHER"),
         date:        new Date(date),
       },
     });

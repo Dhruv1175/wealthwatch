@@ -2,6 +2,7 @@ import { generateAdvancedSummary, Timeframe } from "@/lib/ai/financial-analyzer"
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
 import SummaryPanelClient from "./SummaryPanelClient";
+import { isUserPro } from "@/lib/auth/tier-utils";
 import FinancialAdvicePanel from "./FinancialAdvicePanel";
 import { Suspense } from "react";
 import RazorpayUpgradeButton from "./RazorpayUpgradeButton";
@@ -75,12 +76,10 @@ export default async function SummarySection({ searchParams }: SummarySectionPro
 
   const userMetadata = await prisma.user.findUnique({
     where:  { id: session.user.id },
-    select: { tier: true, subscriptionEnd: true, name: true, email: true, image: true },
+    select: { tier: true, name: true, email: true, image: true },
   });
 
-  const isPro =
-    userMetadata?.tier === "PRO" &&
-    (userMetadata.subscriptionEnd ? userMetadata.subscriptionEnd > new Date() : true);
+  const isPro = isUserPro(userMetadata);
 
   /* ── Year-view gate — shows switcher so user can escape ─────────────── */
   if (timeframe === "year" && !isPro) {

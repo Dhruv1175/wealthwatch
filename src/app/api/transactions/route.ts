@@ -8,6 +8,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
+import { isUserPro } from "@/lib/auth/tier-utils";
 
 const BASIC_TX_LIMIT = 50;
 const MAX_PAGE_SIZE  = 50;
@@ -28,7 +29,7 @@ export async function GET(req: Request) {
     select: { tier: true },
   });
 
-  const isPro = user?.tier === "PRO";
+  const isPro = isUserPro(user);
 
   // ── Count total (real, uncapped) ──────────────────────────────────────────
   const totalCount = await prisma.transaction.count({

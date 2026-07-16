@@ -9,6 +9,7 @@ import InvestmentManager from "@/components/dashboard/InvestmentManager";
 import MacroNewsPanel from "@/components/dashboard/MacroNewsPanel";
 import UserProfileDropdown from "@/components/dashboard/UserProfileDropdown";
 import Sidebar from "@/components/dashboard/Sidebar";
+import { isUserPro } from "@/lib/auth/tier-utils";
 import AddTransactionButtonInline from "@/components/dashboard/AddTransactionButton";   // <-- import
 import Link from "next/link";
 import {
@@ -60,7 +61,7 @@ export default async function Dashboard({ searchParams }: PageProps) {
     totalInvestments:  totalInvestmentsCount,
   };
 
-  const isPro = user?.tier === "PRO";
+  const isPro = isUserPro(user);
 
   async function handleGlobalSignOut() {
     "use server";

@@ -66,6 +66,8 @@ function Meter({ label, used, max }: { label: string; used: number; max: number 
 export default async function BillingPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/");
+  
+  const { isUserPro } = await import("@/lib/auth/tier-utils");
 
   const user = await prisma.user.findUnique({
     where:  { id: session.user.id },
@@ -77,7 +79,7 @@ export default async function BillingPage() {
   });
   if (!user) redirect("/");
 
-  const isPro    = user.tier === "PRO";
+  const isPro    = isUserPro(user);
   const invCount = user._count.investments;
   const txCount  = user._count.transactions;
 

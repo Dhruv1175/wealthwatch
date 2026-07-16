@@ -1,5 +1,7 @@
 import prisma from "@/lib/db";
 
+import { isUserPro } from "./tier-utils";
+
 interface GuardRequest {
     userId:string;
     ipAddress:string;
@@ -8,10 +10,10 @@ interface GuardRequest {
 
 export async function checkFeatureAccess({userId,ipAddress,userAgent}:GuardRequest,requiredFeature:"EXTENDED_TIMEFRAME"|"PDF_UPLOAD"):Promise<{allowed:boolean,reason?:string}> {
     const user = await prisma.user.findUnique({where:{id:userId},
-    select:{tier:true,subscriptionEnd: true}});
+    select:{tier:true}});
     if (!user) return { allowed: false, reason: "User profile target not found." };
 
-  const isPro = user.tier === "PRO" && (user.subscriptionEnd ? user.subscriptionEnd > new Date() : false);
+  const isPro = isUserPro(user);
 
   // 2. Evaluate Feature Request Boundaries
   if (requiredFeature === "EXTENDED_TIMEFRAME") {
