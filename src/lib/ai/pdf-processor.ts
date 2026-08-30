@@ -228,7 +228,7 @@ Rules:
           { role: "system", content: systemPrompt },
           { role: "user",   content: `Parse this statement:\n\n${text}` },
         ],
-        model:           "llama-3.3-70b-versatile",
+        model:           "openai/gpt-oss-120b",
         temperature:     0.05, // Near-zero for deterministic extraction
         response_format: { type: "json_object" },
       });

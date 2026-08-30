@@ -44,22 +44,29 @@ export async function getTrackedInvestments(userId: string): Promise<{ positions
   await Promise.all(
     investments.map(async (asset: DynamicAssetType) => {
       try {
-        // Query the free live price feed matrix
-        const quote = await yahooFinance.quote(asset.symbol) as any;
-        
-        // DEFENSIVE CHECK: Fallback to avgBuyPrice if Yahoo returns undefined for the ticker
-        let currentPrice = asset.avgBuyPrice;
+        const nonMarketTypes = [
+          "FIXED_DEPOSIT", "RECURRING_DEPOSIT", "PPF", "EPF", "NPS", 
+          "REAL_ESTATE", "GOLD", "OTHER"
+        ];
+        const isNonMarket = nonMarketTypes.includes(asset.type) || asset.symbol.includes("_");
 
-        if (quote) {
-          // Indian mutual funds (.BO) often use 'regularMarketPrice' or 'nav' 
-          // Direct equities (.NS) use 'regularMarketPrice' or 'regularMarketPreviousClose' during weekends/holidays
-          currentPrice = 
-            quote.regularMarketPrice || 
-            quote.nav || 
-            quote.regularMarketPreviousClose || 
-            asset.avgBuyPrice;
-        } else {
-          console.warn(`Yahoo Finance returned an empty quote object for symbol: ${asset.symbol}`);
+        let currentPrice = (asset.currentMarketValue && asset.currentMarketValue > 0)
+          ? (asset.sharesOwned > 0 ? asset.currentMarketValue / asset.sharesOwned : asset.currentMarketValue)
+          : asset.avgBuyPrice;
+
+        if (!isNonMarket) {
+          try {
+            const quote = await yahooFinance.quote(asset.symbol) as any;
+            if (quote) {
+              currentPrice = 
+                quote.regularMarketPrice || 
+                quote.nav || 
+                quote.regularMarketPreviousClose || 
+                currentPrice;
+            }
+          } catch {
+            // Quietly fall back to avgBuyPrice/currentMarketValue if symbol is not on Yahoo Finance
+          }
         }
 
         const totalCost = asset.sharesOwned * asset.avgBuyPrice;
@@ -93,9 +100,7 @@ export async function getTrackedInvestments(userId: string): Promise<{ positions
           sipReminderDue,
         });
       } catch (err) {
-        // CATCH-ALL: Prevent an single unparseable ticker from crashing the entire user dashboard query loop
-        console.error(`Market feed failed to resolve ticker symbol: ${asset.symbol}. Using buy price fallback.`, err);
-        
+        console.error(`Error processing investment position ${asset.symbol}:`, err);
         const totalCost = asset.sharesOwned * asset.avgBuyPrice;
         positions.push({
           id: asset.id,
@@ -104,7 +109,7 @@ export async function getTrackedInvestments(userId: string): Promise<{ positions
           type: asset.type,
           sharesOwned: asset.sharesOwned,
           avgBuyPrice: asset.avgBuyPrice,
-          currentPrice: asset.avgBuyPrice, // Fallback safely to prevent crashing the UI
+          currentPrice: asset.avgBuyPrice,
           totalCost,
           currentValue: totalCost,
           profitOrLoss: 0,

@@ -209,8 +209,8 @@ export default function SummaryPanelClient({
               </p>
             </div>
           </div>
-          <div className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-56 min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={r.trendData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }} barCategoryGap="30%">
                 <XAxis
                   dataKey="label"
@@ -237,15 +237,15 @@ export default function SummaryPanelClient({
         </div>
 
         {/* Pie chart */}
-        <div className="col-span-12 lg:col-span-4 card p-6">
+        <div className="col-span-12 lg:col-span-4 card p-6 min-w-0">
           <div className="mb-4">
             <p className="label-xs mb-1">Sector Allocation</p>
             <p className="text-sm font-semibold" style={{ color: "hsl(var(--foreground))" }}>
               Spending Breakdown
             </p>
           </div>
-          <div className="h-36">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-36 min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
                 <Pie
                   data={r.categoryBreakdown}

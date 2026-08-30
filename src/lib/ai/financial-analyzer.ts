@@ -202,7 +202,7 @@ export async function fetchAiAdviceOnly(profileData: {
 
     const aiResponse = await groq.chat.completions.create({
       messages: [{ role: "system", content: dynamicAnalysisPrompt }],
-      model: "llama-3.3-70b-versatile",
+      model: "openai/gpt-oss-120b",
       temperature: 0.2,
     });
 

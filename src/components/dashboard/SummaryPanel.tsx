@@ -108,8 +108,8 @@ export default function SummaryPanel() {
                 <TrendingUp className="w-4 h-4 text-sky-400" />
                 <h3 className="text-xs font-mono uppercase tracking-wider text-gray-400">Cash Flow Velocity Progression</h3>
               </div>
-              <div className="h-64 w-full text-xs font-mono">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-64 w-full min-w-0 text-xs font-mono">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <BarChart data={report.trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <XAxis dataKey="label" stroke="#555" tickLine={false} />
                     <YAxis stroke="#555" tickLine={false} />
@@ -123,13 +123,13 @@ export default function SummaryPanel() {
             </div>
 
             {/* 2. Categorical Allocation Distribution Area */}
-            <div className="border border-white/10 bg-zinc-950 p-5">
+            <div className="border border-white/10 bg-zinc-950 p-5 min-w-0">
               <div className="flex items-center gap-2 mb-4">
                 <Layers className="w-4 h-4 text-sky-400" />
                 <h3 className="text-xs font-mono uppercase tracking-wider text-gray-400">Volumetric Sectors Allocation</h3>
               </div>
-              <div className="h-48 w-full">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-48 w-full min-w-0">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <PieChart>
                     <Pie
                       data={report.categoryBreakdown}
